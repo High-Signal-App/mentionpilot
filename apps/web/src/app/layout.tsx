@@ -20,6 +20,29 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://mention.highsignal.app"),
   title: "MentionPilot",
   description: "AI Visibility Monitoring for Startups",
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    siteName: "MentionPilot",
+    title: "MentionPilot",
+    description: "AI Visibility Monitoring for Startups",
+    url: "/",
+    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "MentionPilot",
+    description: "AI Visibility Monitoring for Startups",
+    images: ["/og-image.png"],
+  },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "MentionPilot",
+  url: "https://mention.highsignal.app",
+  description: "AI Visibility Monitoring for Startups",
 };
 
 export default function RootLayout({
@@ -32,6 +55,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}
       >
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <script
           dangerouslySetInnerHTML={{
             __html:
@@ -49,6 +76,7 @@ export default function RootLayout({
             <SaaSMakerFeedback />
           </AnalyticsProvider>
         </ThemeProvider>
+        <Script id="app-health-log" src="/app-health-log.js" strategy="lazyOnload" />
         <Script id="microsoft-clarity" strategy="lazyOnload">
           {`(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/yoigmcwti8";y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window,document,"clarity","script","yoigmcwti8");window.clarity("set","project_id","mentionpilot");`}
         </Script>

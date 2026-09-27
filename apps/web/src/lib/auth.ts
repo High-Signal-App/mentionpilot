@@ -1,11 +1,21 @@
 import { betterAuth } from "better-auth";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { ping } from "@/lib/ping";
 
 function createAuth(d1: D1Database) {
   return betterAuth({
     secret: process.env.BETTER_AUTH_SECRET,
     baseURL: process.env.BETTER_AUTH_URL,
     database: d1 as any, // D1 auto-detected by better-auth's kysely adapter
+    databaseHooks: {
+      user: {
+        create: {
+          after: async (user) => {
+            void ping("signup", { title: user.email, icon: "👋" });
+          },
+        },
+      },
+    },
     socialProviders: {
       google: {
         clientId: process.env.AUTH_GOOGLE_ID!,
