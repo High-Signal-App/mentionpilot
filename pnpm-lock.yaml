@@ -160,6 +160,9 @@ importers:
       '@mentionpilot/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@saas-maker/app-health':
+        specifier: https://github.com/sass-maker/app-health/releases/download/node-v0.4.0/saas-maker-app-health-0.4.0.tgz
+        version: https://github.com/sass-maker/app-health/releases/download/node-v0.4.0/saas-maker-app-health-0.4.0.tgz(express@5.2.1)(hono@4.12.15)
       '@saas-maker/ops':
         specifier: ^0.1.1
         version: 0.1.1
@@ -2086,6 +2089,18 @@ packages:
 
   '@rtsao/scc@1.1.0':
     resolution: {integrity: sha512-zt6OdqaDoOnJ1ZYsCYGt9YmWzDXl4vQdKTyJev62gFhRGKdx7mcT54V9KIjg+d2wi9EXsPvAPKe7i7WjfVWB8g==}
+
+  '@saas-maker/app-health@https://github.com/sass-maker/app-health/releases/download/node-v0.4.0/saas-maker-app-health-0.4.0.tgz':
+    resolution: {tarball: https://github.com/sass-maker/app-health/releases/download/node-v0.4.0/saas-maker-app-health-0.4.0.tgz}
+    version: 0.4.0
+    peerDependencies:
+      express: '>=4.19.0 <6'
+      hono: '>=4.10.0 <5'
+    peerDependenciesMeta:
+      express:
+        optional: true
+      hono:
+        optional: true
 
   '@saas-maker/changelog-widget@0.2.1':
     resolution: {integrity: sha512-tAQb6hr5mOzbyQxKUNWePlllsdNDquHW0G2FG7u9Um2BzgNNi8WF94M5Khz/SlvVoSYvKl1yMFX6sxnj07kynw==}
@@ -7093,6 +7108,11 @@ snapshots:
     optional: true
 
   '@rtsao/scc@1.1.0': {}
+
+  '@saas-maker/app-health@https://github.com/sass-maker/app-health/releases/download/node-v0.4.0/saas-maker-app-health-0.4.0.tgz(express@5.2.1)(hono@4.12.15)':
+    optionalDependencies:
+      express: 5.2.1
+      hono: 4.12.15
 
   '@saas-maker/changelog-widget@0.2.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5)':
     dependencies:

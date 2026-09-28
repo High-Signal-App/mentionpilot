@@ -9,6 +9,9 @@ export interface Bindings {
   FREE_AI_API_KEY?: string;
   FREE_AI_MODEL?: string;
   POSTHOG_API_KEY?: string;
+  // App Health endpoint monitoring — inert until a private ingest key is set.
+  APP_HEALTH_INGEST_KEY?: string;
+  APP_HEALTH_ENVIRONMENT?: string;
 }
 
 export interface Variables {
