@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { configurePostHog, trace, flushPostHog } from '@saas-maker/ops';
 import type { Bindings, Variables } from './types';
+import { mentionPilotAppHealthMiddleware } from './app-health';
 import { auth } from './routes/auth';
 import { brands } from './routes/brands';
 import { prompts } from './routes/prompts';
@@ -73,6 +74,11 @@ app.use('*', async (c, next) => {
   await next();
   if (c.env.POSTHOG_API_KEY) c.executionCtx.waitUntil(flushPostHog());
 });
+
+// App Health endpoint monitoring — inert until APP_HEALTH_INGEST_KEY is set.
+// Records only method, matched route template, status, duration, and declared
+// response bytes; delivery runs in waitUntil and never blocks the response.
+app.use('*', mentionPilotAppHealthMiddleware());
 
 // Health check
 app.get('/health', (c) => {
