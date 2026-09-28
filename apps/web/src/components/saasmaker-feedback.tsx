@@ -8,18 +8,7 @@ const API_BASE = "https://api.sassmaker.com";
 const CATALOG_ID = "mentionpilot";
 
 export function SaaSMakerFeedback() {
-  const [isDesktop, setIsDesktop] = useState(false);
   const [projectKey, setProjectKey] = useState("");
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(min-width: 640px)");
-    const sync = () => setIsDesktop(mediaQuery.matches);
-
-    sync();
-    mediaQuery.addEventListener("change", sync);
-
-    return () => mediaQuery.removeEventListener("change", sync);
-  }, []);
 
   useEffect(() => {
     let active = true;
@@ -41,7 +30,7 @@ export function SaaSMakerFeedback() {
     };
   }, []);
 
-  if (!projectKey || !isDesktop) return null;
+  if (!projectKey) return null;
   return (
     <FeedbackWidget
       projectId={projectKey}
