@@ -76,6 +76,16 @@ export default function RootLayout({
             <SaaSMakerFeedback />
           </AnalyticsProvider>
         </ThemeProvider>
+        <Script
+          id="app-health-tracker"
+          src="https://health.sassmaker.com/tracker.js"
+          strategy="afterInteractive"
+          data-key="ahk_pub_b98ea89981e7bbb4c2301e476a030aa08459593907568ae8175683af9458d102"
+          data-project="app-import-c47b0daf38fb4608873f1d0cd8a30d66f00b2d479a9770dbbf8c8aeb26075168"
+          data-identity="persistent"
+          data-endpoint="https://ingest.sassmaker.com/v1/browser"
+        />
+        <Script id="app-health-events" src="/app-health-events.js" strategy="afterInteractive" />
         <Script id="app-health-log" src="/app-health-log.js" strategy="lazyOnload" />
         <Script id="microsoft-clarity" strategy="lazyOnload">
           {`(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/yoigmcwti8";y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window,document,"clarity","script","yoigmcwti8");window.clarity("set","project_id","mentionpilot");`}

@@ -151,6 +151,7 @@ export default function FreeCheckPage() {
             </div>
             <form
               className={styles.formBody}
+              data-app-health-event="free_check.started"
               onSubmit={(event) => {
                 event.preventDefault();
                 void runCheck();

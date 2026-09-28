@@ -102,8 +102,8 @@ export default function Home() {
             <Link href="/blog">Research</Link>
           </nav>
           <div className={styles.headerActions}>
-            <Link href="/login" className={styles.signIn}>Sign in</Link>
-            <Link href="/check" className={styles.headerCta}>Free brand check</Link>
+            <Link href="/login" className={styles.signIn} data-app-health-event="workspace.sign_in.opened">Sign in</Link>
+            <Link href="/check" className={styles.headerCta} data-app-health-event="free_check.opened">Free brand check</Link>
           </div>
         </div>
       </header>
@@ -120,10 +120,10 @@ export default function Home() {
               MentionPilot shows founders and marketing teams the answers behind AI visibility, the competitors shaping the narrative, and the source gaps worth fixing next.
             </p>
             <div className={styles.heroActions}>
-              <Link href="/check" className={styles.primaryCta}>
+              <Link href="/check" className={styles.primaryCta} data-app-health-event="free_check.opened">
                 Run a free brand check <Arrow />
               </Link>
-              <Link href="/login" className={styles.textCta}>
+              <Link href="/login" className={styles.textCta} data-app-health-event="workspace.sign_in.opened">
                 Open the workspace <span aria-hidden="true">↗</span>
               </Link>
             </div>
@@ -303,7 +303,7 @@ export default function Home() {
             </div>
             <div className={styles.finalAction}>
               <p>Run a public check, inspect the underlying answer, and decide whether the ongoing workspace earns a place in your process.</p>
-              <Link href="/check" className={styles.finalCta}>
+              <Link href="/check" className={styles.finalCta} data-app-health-event="free_check.opened">
                 Check your brand <Arrow />
               </Link>
               <span>No signup required for the first check.</span>
@@ -318,12 +318,24 @@ export default function Home() {
         <p>Evidence-first brand intelligence for AI assistants.</p>
         <div>
           <Link href="/blog">Research</Link>
-          <Link href="/check">Free check</Link>
-          <Link href="/login">Sign in</Link>
+          <Link href="/check" data-app-health-event="free_check.opened">Free check</Link>
+          <Link href="/login" data-app-health-event="workspace.sign_in.opened">Sign in</Link>
         </div>
+        <p className={styles.footerPrivacy}>
+          App Health measures public page views and named actions using first-party anonymous browser IDs for up to 90 days. See the <a href="https://sassmaker.com/privacy">privacy policy</a>.
+        </p>
+        <saas-maker-newsletter-capture
+          product-name="MentionPilot"
+          catalog-id="mentionpilot"
+          kind="newsletter"
+          source="footer"
+          privacy-url="https://sassmaker.com/privacy"
+          theme="dark"
+        ></saas-maker-newsletter-capture>
       </footer>
       <script src="https://sassmaker.com/project-strip.js" data-project="mentionpilot" defer />
       <script src="https://sassmaker.com/ai-chat-footer.js" data-name="MentionPilot" defer />
+      <script type="module" src="https://sassmaker.com/newsletter-capture.js" />
     </div>
   );
 }

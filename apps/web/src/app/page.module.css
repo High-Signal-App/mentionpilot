@@ -521,6 +521,9 @@
 .footer > div { display: flex; justify-content: flex-end; gap: 1.3rem; }
 .footer > div a { display: inline-flex; min-height: 44px; align-items: center; color: var(--night-soft); font-size: 0.72rem; text-decoration: none; }
 .footer > div a:hover { color: var(--paper); }
+.footerPrivacy { grid-column: 1 / -1; max-width: 70ch; margin-inline: auto !important; text-align: center; line-height: 1.6; }
+.footerPrivacy a { color: var(--paper); text-underline-offset: 0.2em; }
+.footer :global(saas-maker-newsletter-capture) { grid-column: 1 / -1; display: block; width: min(100%, 680px); justify-self: center; }
 
 @keyframes markEvidence { to { transform: rotate(-0.5deg) scaleX(1); } }
 
