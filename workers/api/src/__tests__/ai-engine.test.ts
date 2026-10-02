@@ -1,5 +1,5 @@
 import { afterEach, describe, it, expect, vi } from 'vitest';
-import { analyzeResponse, detectAIPlatform, queryEndpoint, queryWorkersAi } from '../lib/ai-engine';
+import { analyzeResponse, detectAIPlatform, queryEndpoint, queryWorkersAi, SharedNeuronBudgetUnavailableError } from '../lib/ai-engine';
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -160,15 +160,81 @@ describe('queryEndpoint', () => {
 });
 
 describe('queryWorkersAi', () => {
-  it('queries the bound model and normalizes its response', async () => {
+  const pricedModel = '@cf/meta/llama-3.1-8b-instruct-fp8-fast';
+  const budgetNamespace = (admission: (neurons: number) => unknown = (neurons) => ({
+    allowed: true,
+    used: neurons,
+    remaining: 9500 - neurons,
+    retryAfter: 0,
+    dayKey: new Date().toISOString().slice(0, 10),
+  }), status = 200) => {
+    const calls: Array<{ url: string; body: { neurons: number } }> = [];
+    return {
+      calls,
+      idFromName: vi.fn((name: string) => name),
+      get: vi.fn(() => ({ fetch: vi.fn(async (url: string, init: RequestInit) => {
+        const body = JSON.parse(String(init.body)) as { neurons: number };
+        calls.push({ url, body });
+        return Response.json(admission(body.neurons), { status });
+      }) })),
+    };
+  };
+
+  it('reserves a conservative UTF-8 input plus output estimate before calling the exact priced model', async () => {
     const run = vi.fn().mockResolvedValue({ response: 'Cloudflare response' });
-    const result = await queryWorkersAi({ run } as unknown as Ai, 'Example prompt');
+    const budget = budgetNamespace();
+    const result = await queryWorkersAi({ run } as unknown as Ai, '🙂', budget, pricedModel);
+    await queryWorkersAi({ run } as unknown as Ai, '🙂', budget, pricedModel);
 
     expect(result.responseText).toBe('Cloudflare response');
-    expect(result.model).toBe('@cf/meta/llama-3.1-8b-instruct-fast');
-    expect(run).toHaveBeenCalledWith('@cf/meta/llama-3.1-8b-instruct-fast', {
-      messages: [{ role: 'user', content: 'Example prompt' }],
+    expect(result.model).toBe(pricedModel);
+    expect(run).toHaveBeenCalledWith(pricedModel, {
+      messages: [{ role: 'user', content: '🙂' }],
       max_tokens: 512,
     });
+    const serialized = JSON.stringify({ messages: [{ role: 'user', content: '🙂' }], max_tokens: 512 });
+    const expected = Math.ceil(((new TextEncoder().encode(serialized).byteLength * 4119 + 512 * 34868) / 1_000_000) * 1.2);
+    expect(expected).toBe(22);
+    expect(budget.calls).toEqual([
+      { url: 'https://internal.local/try-debit', body: { neurons: 22 } },
+      { url: 'https://internal.local/try-debit', body: { neurons: 22 } },
+    ]);
+  });
+
+  it('fails closed on the unpriced legacy alias before budget lookup or inference', async () => {
+    const run = vi.fn();
+    const budget = budgetNamespace();
+    await expect(queryWorkersAi({ run } as unknown as Ai, 'Example prompt', budget, '@cf/meta/llama-3.1-8b-instruct-fast'))
+      .rejects.toBeInstanceOf(SharedNeuronBudgetUnavailableError);
+    expect(budget.calls).toHaveLength(0);
+    expect(run).not.toHaveBeenCalled();
+  });
+
+  it('fails closed on denial, malformed responses, and missing namespace before inference', async () => {
+    const run = vi.fn();
+    await expect(queryWorkersAi({ run } as unknown as Ai, 'Example prompt', budgetNamespace(() => ({
+      allowed: false, used: 0, remaining: 9500, retryAfter: 60, dayKey: new Date().toISOString().slice(0, 10),
+    })), pricedModel)).rejects.toBeInstanceOf(SharedNeuronBudgetUnavailableError);
+    await expect(queryWorkersAi({ run } as unknown as Ai, 'Example prompt', budgetNamespace((neurons) => ({
+      allowed: true, used: neurons, remaining: 1, retryAfter: 0, dayKey: new Date().toISOString().slice(0, 10),
+    })), pricedModel)).rejects.toBeInstanceOf(SharedNeuronBudgetUnavailableError);
+    await expect(queryWorkersAi({ run } as unknown as Ai, 'Example prompt', budgetNamespace((neurons) => ({
+      allowed: true, used: neurons - 1, remaining: 9500 - neurons + 1, retryAfter: 0, dayKey: new Date().toISOString().slice(0, 10),
+    })), pricedModel)).rejects.toBeInstanceOf(SharedNeuronBudgetUnavailableError);
+    await expect(queryWorkersAi({ run } as unknown as Ai, 'Example prompt', budgetNamespace((neurons) => ({
+      allowed: true, used: neurons, remaining: 9500 - neurons, retryAfter: 1, dayKey: new Date().toISOString().slice(0, 10),
+    })), pricedModel)).rejects.toBeInstanceOf(SharedNeuronBudgetUnavailableError);
+    await expect(queryWorkersAi({ run } as unknown as Ai, 'Example prompt', budgetNamespace(() => []), pricedModel))
+      .rejects.toBeInstanceOf(SharedNeuronBudgetUnavailableError);
+    await expect(queryWorkersAi({ run } as unknown as Ai, 'Example prompt', budgetNamespace(() => null), pricedModel))
+      .rejects.toBeInstanceOf(SharedNeuronBudgetUnavailableError);
+    await expect(queryWorkersAi({ run } as unknown as Ai, 'Example prompt', budgetNamespace((neurons) => ({
+      allowed: true, used: neurons, remaining: 9500 - neurons, retryAfter: 0, dayKey: '2000-01-01',
+    })), pricedModel)).rejects.toBeInstanceOf(SharedNeuronBudgetUnavailableError);
+    await expect(queryWorkersAi({ run } as unknown as Ai, 'Example prompt', budgetNamespace(undefined, 201), pricedModel))
+      .rejects.toBeInstanceOf(SharedNeuronBudgetUnavailableError);
+    await expect(queryWorkersAi({ run } as unknown as Ai, 'Example prompt', undefined, pricedModel))
+      .rejects.toBeInstanceOf(SharedNeuronBudgetUnavailableError);
+    expect(run).not.toHaveBeenCalled();
   });
 });

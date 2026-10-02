@@ -54,7 +54,7 @@ freeCheck.post('/', async (c) => {
         maxTokens: 800,
         projectId: 'mentionpilot',
       })
-      : await queryWorkersAi(c.env.AI, prompt);
+      : await queryWorkersAi(c.env.AI, prompt, c.env.NEURON_BUDGET);
     intelligence = parseSiteIntelligence(response.responseText, siteInfo);
   } catch (error) {
     // Deterministic, unbranded prompts remain available when interpretation fails.
@@ -91,7 +91,7 @@ freeCheck.post('/', async (c) => {
       try {
         const response = endpointConfig
           ? await queryEndpoint(endpointConfig, promptText, { projectId: 'mentionpilot' })
-          : await queryWorkersAi(c.env.AI, promptText);
+          : await queryWorkersAi(c.env.AI, promptText, c.env.NEURON_BUDGET);
         const analysis = analyzeResponse(
           response.responseText,
           siteInfo.brand_name,

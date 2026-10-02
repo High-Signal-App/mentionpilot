@@ -23,6 +23,12 @@ FREE_AI_MODEL = "auto"
 [ai]
 binding = "AI"
 
+# Shared app-local admission for each direct Workers AI call; the gateway enforces the 9,500/day cap.
+[[durable_objects.bindings]]
+name = "NEURON_BUDGET"
+class_name = "NeuronBudgetDO"
+script_name = "free-ai-gateway"
+
 [triggers]
 crons = ["0 6 * * *"]
 

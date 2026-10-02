@@ -17,7 +17,87 @@ export interface QueryEndpointOptions {
   projectId?: string;
 }
 
-export const DEFAULT_WORKERS_AI_MODEL = '@cf/meta/llama-3.1-8b-instruct-fast';
+export const DEFAULT_WORKERS_AI_MODEL = '@cf/meta/llama-3.1-8b-instruct-fp8-fast';
+const WORKERS_AI_DAILY_NEURON_CAP = 9_500;
+const DEFAULT_WORKERS_AI_OUTPUT_TOKENS = 512;
+const MAX_WORKERS_AI_OUTPUT_TOKENS = 8_192;
+
+// Exact IDs and rates from Cloudflare's Workers AI pricing table (checked 2026-10-02).
+// Other IDs such as the former `...-instruct-fast` default stay absent: never infer aliases.
+const PRICED_WORKERS_AI_MODELS: Record<string, { input: number; output: number }> = {
+  '@cf/meta/llama-3.1-8b-instruct-fp8-fast': { input: 4_119, output: 34_868 },
+};
+
+export class SharedNeuronBudgetUnavailableError extends Error {
+  constructor() {
+    super('Workers AI is unavailable under the shared daily neuron budget.');
+    this.name = 'SharedNeuronBudgetUnavailableError';
+  }
+}
+
+export interface NeuronBudgetNamespace {
+  idFromName(name: string): unknown;
+  get(id: unknown): {
+    fetch(input: string, init: RequestInit): Promise<Response>;
+  };
+}
+
+async function reserveWorkersAiNeurons(
+  budget: NeuronBudgetNamespace | undefined,
+  neurons: number,
+): Promise<void> {
+  try {
+    if (!budget) throw new Error('budget binding unavailable');
+    const response = await budget
+      .get(budget.idFromName('global-budget'))
+      .fetch('https://internal.local/try-debit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ neurons }),
+      });
+    if (response.status !== 200) throw new Error('budget request failed');
+    const payload: unknown = await response.json();
+    if (payload === null || typeof payload !== 'object' || Array.isArray(payload)) {
+      throw new Error('budget receipt is not an object');
+    }
+    const result = payload as Record<string, unknown>;
+    if (
+      result.allowed !== true ||
+      result.dayKey !== new Date().toISOString().slice(0, 10) ||
+      result.retryAfter !== 0 ||
+      !Number.isSafeInteger(result.used) ||
+      Number(result.used) < neurons ||
+      !Number.isSafeInteger(result.remaining) ||
+      Number(result.remaining) < 0 ||
+      Number(result.used) + Number(result.remaining) !== WORKERS_AI_DAILY_NEURON_CAP
+    ) throw new Error('budget admission invalid');
+  } catch {
+    throw new SharedNeuronBudgetUnavailableError();
+  }
+}
+
+function estimateWorkersAiNeurons(model: string, input: Record<string, unknown>): number {
+  const price = PRICED_WORKERS_AI_MODELS[model];
+  if (!price) throw new SharedNeuronBudgetUnavailableError();
+  const maxTokens = input.max_tokens;
+  if (!Number.isSafeInteger(maxTokens) || Number(maxTokens) < 1 || Number(maxTokens) > MAX_WORKERS_AI_OUTPUT_TOKENS) {
+    throw new SharedNeuronBudgetUnavailableError();
+  }
+  let serialized: string;
+  try {
+    serialized = JSON.stringify(input);
+  } catch {
+    throw new SharedNeuronBudgetUnavailableError();
+  }
+  const inputBytes = new TextEncoder().encode(serialized).byteLength;
+  const neurons = Math.max(1, Math.ceil(
+    ((inputBytes * price.input + Number(maxTokens) * price.output) / 1_000_000) * 1.2,
+  ));
+  if (!Number.isSafeInteger(neurons) || neurons > WORKERS_AI_DAILY_NEURON_CAP) {
+    throw new SharedNeuronBudgetUnavailableError();
+  }
+  return neurons;
+}
 
 export interface PlatformResponse {
   responseText: string;
@@ -109,13 +189,17 @@ export async function queryEndpoint(
 export async function queryWorkersAi(
   ai: Ai,
   promptText: string,
+  budget: NeuronBudgetNamespace | undefined,
   model = DEFAULT_WORKERS_AI_MODEL,
 ): Promise<PlatformResponse> {
   const start = Date.now();
-  const result = await ai.run(model, {
+  const input = {
     messages: [{ role: 'user', content: promptText }],
-    max_tokens: 512,
-  });
+    max_tokens: DEFAULT_WORKERS_AI_OUTPUT_TOKENS,
+  };
+  const neurons = estimateWorkersAiNeurons(model, input);
+  await reserveWorkersAiNeurons(budget, neurons);
+  const result = await ai.run(model, input);
   const responseText = typeof result.response === 'string' ? result.response : '';
 
   if (!responseText) {
