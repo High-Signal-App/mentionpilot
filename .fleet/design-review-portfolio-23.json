@@ -1,0 +1,279 @@
+{
+  "$schema": "fleet.design-review.v2",
+  "version": 2,
+  "project": "mentionpilot-evidence-release-20261002.wbXxCc",
+  "target": "Portfolio project navigation and recurring-check settings",
+  "surfaceMode": "operate",
+  "mode": "overhaul",
+  "register": "product",
+  "context": {
+    "product": "PRODUCT.md",
+    "design": "DESIGN.md"
+  },
+  "direction": {
+    "source": "comparison",
+    "references": [
+      "MentionPilot Signal Room landing system (DESIGN.md)",
+      "MentionPilot source receipt and action docket patterns (DESIGN.md)"
+    ],
+    "probes": [
+      {
+        "id": "a",
+        "path": ".fleet/design-reviews/portfolio-23/a-desktop.jpg",
+        "thesis": "An editorial research desk of owned brand case files.",
+        "layout": "Persistent project rail, central evidence sheet and marginal next action; schedule panel below; stacked phone view.",
+        "typography": "Georgia for findings and concise headings, system sans for controls, monospace source receipts.",
+        "surfaces": {
+          "landing": ".fleet/design-reviews/portfolio-23/landing-current.jpg",
+          "app": ".fleet/design-reviews/portfolio-23/a-desktop.jpg"
+        }
+      },
+      {
+        "id": "b",
+        "path": ".fleet/design-reviews/portfolio-23/b-desktop.jpg",
+        "thesis": "An operational register for comparing many brands quickly.",
+        "layout": "Top navigation, compact project register and persistent evidence inspector; phone uses a select and stacked inspector.",
+        "typography": "Compact system sans with weight-based hierarchy and mono metadata.",
+        "surfaces": {
+          "landing": ".fleet/design-reviews/portfolio-23/landing-current.jpg",
+          "app": ".fleet/design-reviews/portfolio-23/b-desktop.jpg"
+        }
+      },
+      {
+        "id": "c",
+        "path": ".fleet/design-reviews/portfolio-23/c-desktop.jpg",
+        "thesis": "A guided weekly research session ending in one accountable action.",
+        "layout": "Horizontal brand strip, stepped review workflow and contrasting evidence paper; compact 2-column steps on phone.",
+        "typography": "Measured serif working questions, sans controls, compact mono step labels.",
+        "surfaces": {
+          "landing": ".fleet/design-reviews/portfolio-23/landing-current.jpg",
+          "app": ".fleet/design-reviews/portfolio-23/c-desktop.jpg"
+        }
+      }
+    ],
+    "selected": "a",
+    "approval": "approved",
+    "ownerEvidence": {
+      "path": ".fleet/design-reviews/portfolio-23-selection.json",
+      "quote": "A \u2014 Signal Room (Recommended)"
+    },
+    "supplied": "",
+    "before": "",
+    "library": {
+      "strategy": "upstream-first",
+      "primary": "existing-project-system",
+      "sources": [],
+      "runtime": "existing",
+      "customReplacement": {
+        "used": false,
+        "authorization": "not-required",
+        "reason": "Reuse existing React/Radix Button, Input, Label and navigation links. Native select and disclosure provide standard keyboard behavior without a new dependency."
+      }
+    },
+    "contract": {
+      "purpose": "MentionPilot helps founders and marketing teams inspect how configured AI endpoints and supported community sources describe each brand, using retained evidence and accountable follow-up tasks.",
+      "purposeSource": "PRODUCT.md and saas-maker/catalog/projects.json projects[id=mentionpilot].presentation.directory.purposeContract",
+      "canonicalPurpose": "Show how configured AI assistants and supported community sources describe a brand.",
+      "purposeAlignment": "match",
+      "driftNote": "",
+      "audience": "Founders and marketing teams managing several owned brands.",
+      "job": "Choose the right owned project, inspect its evidence and configure honest, persistent recurrence.",
+      "thesis": "Carry Signal Room into a working research desk; keep evidence and the active brand obvious.",
+      "system": "Warm paper #F2EEE5, ink #171613, muted ink #625E56, restrained coral #A92E24 actions, rules #C9C0B1. Georgia findings and headings, existing sans controls, mono receipts. Mostly square paper surfaces, readable line lengths, persistent desktop rail and native mobile selector.",
+      "signature": "Named brand case files, evidence receipts and a visible saved schedule state.",
+      "risk": "Editorial typography can reduce density; constrain headings and retain compact controls so multi-project operation remains quick.",
+      "qualityBar": "Active project is always visible. Switching cannot expose stale evidence. Schedule off/daily/weekly reads saved state and shows errors. No inactive alerts pretending to save. Readable at 390/768/1440 with labelled controls and visible focus. No fabricated provider results or price estimates. Owner subsequently selected existing free-ai for the pilot: show the managed default and optional BYOK with honest source/model coverage; fresh profiles need a brand name and saved prompt set rather than user credentials."
+    },
+    "productSurfaces": {
+      "scope": "paired",
+      "landing": "https://mention.highsignal.app/ (apps/web public landing, unchanged)",
+      "app": "apps/web dashboard shell and /dashboard/settings (local implementation); /dashboard/mentions first-value path",
+      "authority": "DESIGN.md"
+    }
+  },
+  "evidence": {
+    "slopScale": {
+      "platform": "web",
+      "posture": "advisory",
+      "reason": "",
+      "checkpoints": [
+        {
+          "stage": "directions",
+          "direction": "a",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs http://127.0.0.1:8793/a.html --json",
+          "report": ".fleet/design-reviews/portfolio-23/direction-a-reviewed.json",
+          "findingsReview": "Cream paper, coral annotation borders, short uppercase source labels and numbered navigation intentionally implement the existing Signal Room system. They are not repeated marketing feature cards. Phone view stacks evidence and settings without overflow."
+        },
+        {
+          "stage": "directions",
+          "direction": "b",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs http://127.0.0.1:8793/b.html --json",
+          "report": ".fleet/design-reviews/portfolio-23/direction-b-reviewed.json",
+          "findingsReview": "Compact source labels and readiness annotation borders are intentional. The scanner flags the inspector callout as nested cards; it conveys unavailable evidence rather than a decorative feature grid. Fixed the initially empty schedule column before this scan."
+        },
+        {
+          "stage": "directions",
+          "direction": "c",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs http://127.0.0.1:8793/c.html --json",
+          "report": ".fleet/design-reviews/portfolio-23/direction-c-reviewed.json",
+          "findingsReview": "Dark review desk, numbered workflow, short source labels and amber annotations are intentional. Fixed inherited black button text and changed phone steps to a wrapping grid before this scan."
+        },
+        {
+          "stage": "iteration",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs http://127.0.0.1:8794/dashboard/settings https://mention.highsignal.app/ --json",
+          "report": ".fleet/design-reviews/portfolio-23/iteration-working.json",
+          "findingsReview": "Reviewed actual paired renders. Uppercase source labels are intentional. The dark-theme flag reflects the global body theme; the scoped workspace renders warm paper. Existing landing numbered method and Geist controls preserve the selected system. Functional configuration panels convey setup, not fabricated results. Fixed wordmark mismatch, card shadow selector, tablet crowding and phone prompt wrapping during iteration."
+        },
+        {
+          "stage": "final",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs http://127.0.0.1:8794/dashboard/settings http://127.0.0.1:8794/dashboard/mentions https://mention.highsignal.app/ --json",
+          "report": ".fleet/design-reviews/portfolio-23/final-paired.json",
+          "findingsReview": "Reviewed actual paired renders. Uppercase source labels are intentional. The dark-theme flag reflects the global body theme; the scoped workspace renders warm paper. Existing landing numbered method and Geist controls preserve the selected system. Functional configuration panels convey setup, not fabricated results. Fixed wordmark mismatch, card shadow selector, tablet crowding and phone prompt wrapping during iteration."
+        }
+      ]
+    },
+    "visualReview": {
+      "status": "pass",
+      "reviewer": "Codex rendered review",
+      "direction": "a",
+      "report": ".fleet/design-reviews/portfolio-23/review.md",
+      "checks": {
+        "hierarchy": {
+          "status": "pass",
+          "observation": "Active case file and navigation remain visible; saved schedule, draft changes and next action are distinct. Optional custom AI and community profile now use disclosures to reduce first-use form load."
+        },
+        "typography": {
+          "status": "pass",
+          "observation": "Serif research headings, sans controls and mono source labels match Signal Room; readable desktop and phone line lengths."
+        },
+        "composition": {
+          "status": "pass",
+          "observation": "Flat ruled paper surfaces avoid stacked decorative panels. Fixed the card shadow selector and tablet schedule column crowding."
+        },
+        "identity": {
+          "status": "pass",
+          "observation": "Extracted the existing public SVG mark into a shared component and matched the workspace wordmark to the landing."
+        },
+        "interaction": {
+          "status": "pass",
+          "observation": "Synthetic API fixture with real components verified owned selection, delayed prior-project response isolation, schedule persistence after reload, visible save failure and creation. Native navigation disclosure works with Enter; prompt inputs and delete actions now have labels."
+        },
+        "responsive": {
+          "status": "pass",
+          "observation": "Rendered 390, 768 and 1440 widths. Fixed tablet settings stacking and narrow-phone prompt-row wrapping; no observed horizontal overflow."
+        }
+      }
+    },
+    "screenshots": [
+      {
+        "width": 390,
+        "path": ".fleet/design-reviews/portfolio-23/final-390.jpg"
+      },
+      {
+        "width": 768,
+        "path": ".fleet/design-reviews/portfolio-23/final-768.jpg"
+      },
+      {
+        "width": 1440,
+        "path": ".fleet/design-reviews/portfolio-23/final-1440.jpg"
+      }
+    ],
+    "projectCheck": {
+      "command": "pnpm --filter @mentionpilot/api test (131 tests); pnpm --filter @mentionpilot/api typecheck; pnpm --filter @mentionpilot/web build; pnpm --filter @mentionpilot/web typecheck",
+      "status": "pass"
+    },
+    "critique": {
+      "score": 35,
+      "maximum": 40,
+      "dimensions": {
+        "hierarchy": 7,
+        "typography": 7,
+        "composition": 6,
+        "identity": 7,
+        "interaction": 4,
+        "responsive": 4
+      }
+    },
+    "audit": {
+      "score": 18,
+      "maximum": 20,
+      "dimensions": {
+        "purpose": 4,
+        "accessibility": 5,
+        "behavior": 4,
+        "responsive": 3,
+        "performance": 2
+      }
+    },
+    "unresolved": {
+      "p0": 0,
+      "p1": 0
+    },
+    "detector": {
+      "posture": "advisory",
+      "findings": []
+    },
+    "comprehension": {
+      "status": "not-applicable",
+      "reviewer": "",
+      "answers": {
+        "product": "",
+        "audience": "",
+        "value": "",
+        "mechanism": "",
+        "proof": "",
+        "nextAction": ""
+      },
+      "purposeScore": {
+        "product": 0,
+        "audience": 0,
+        "value": 0,
+        "mechanism": 0,
+        "proof": 0,
+        "nextAction": 0,
+        "total": 0
+      },
+      "mismatches": []
+    },
+    "productContinuity": {
+      "status": "pass",
+      "reviewer": "Codex",
+      "report": ".fleet/design-reviews/portfolio-23/review.md",
+      "surfaces": {
+        "landing": ".fleet/design-reviews/portfolio-23/landing-current.jpg",
+        "app": ".fleet/design-reviews/portfolio-23/mentions-final-1440.jpg"
+      },
+      "checks": {
+        "designSystem": {
+          "status": "pass",
+          "observation": "Landing and app share paper, ink, coral actions, rules, serif findings and sans controls. Workspace adds denser case-file navigation for operation."
+        },
+        "identity": {
+          "status": "pass",
+          "observation": "Shared existing SVG mark and matched sans wordmark resolve the observed mismatch."
+        },
+        "vocabulary": {
+          "status": "pass",
+          "observation": "Brand, buyer questions, retained answers, citations and observed mention rate remain consistent across landing, free check and workspace."
+        },
+        "productTruth": {
+          "status": "pass",
+          "observation": "Managed free-ai is named separately from optional BYOK. Actual returned model is retained; neither surface claims direct consumer-assistant coverage. Alerts are explicitly unavailable; source failures remain unknown."
+        },
+        "handoff": {
+          "status": "pass",
+          "observation": "Followed public landing CTA to free check: three live answers, 0% observed mention rate, first model gemini-3.5-flash-lite. Normal Google sign-in reached the owned workspace and first-use AI mentions. New UI first-use and schedule interactions verified locally with synthetic API state. New deployed owned-check and real cron qualification remain release follow-up, not claimed by this review."
+        }
+      }
+    }
+  },
+  "ownerFeedback": {
+    "decision": "keep",
+    "note": "Owner explicitly selected A \u2014 Signal Room (Recommended). This is direction approval, not acceptance of the final product."
+  }
+}

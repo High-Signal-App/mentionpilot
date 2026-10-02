@@ -2,7 +2,7 @@
 name: Signal Room
 status: selected
 mode: replacement
-surface: landing-page
+surface: landing-and-workspace
 colors:
   paper: "#F2EEE5"
   paper_deep: "#E7E0D3"
@@ -85,3 +85,9 @@ Signal Room presents MentionPilot as an editorial investigation into how AI assi
 - Don't invent customer logos, benchmarks, testimonials, or provider results.
 - Don't fall back to generic icon cards, hero metric strips, glowing dashboards, glass panels, or oversized slogans.
 - Don't let the editorial styling reduce readability, keyboard access, or responsive clarity.
+
+## Workspace continuity
+
+The landing and dashboard share Signal Room: the product mark and wordmark, warm paper, ink, coral actions, serif findings, sans controls, mono evidence labels, and ruled sections. The workspace uses denser spacing and a persistent project rail because it supports repeat use. Mobile navigation uses a native disclosure and project selector. The authenticated owner selects an owned project before any project-bound page opens. Switching remounts the page so evidence and drafts stay within their case file.
+
+Monitoring controls distinguish saved state, unsaved drafts, unavailable state, and failed saves. Recurrence requires a saved brand profile and prompts, plus either the existing free-ai service or a complete custom endpoint/model/API key setup. The managed source is labelled free-ai; its returned model is evidence, not proof of consumer-assistant coverage. Alerts remain explicitly unavailable. No illustrative answer on the public landing establishes a live provider result or a successful scheduled run.

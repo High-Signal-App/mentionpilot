@@ -220,10 +220,11 @@ export async function queryManagedGateway(
     model?: string;
   };
   const responseText = typeof json.choices?.[0]?.message?.content === 'string'
-    ? json.choices[0].message.content.slice(0, 4000)
+    ? json.choices[0].message.content
     : '';
   if (!responseText) throw new Error('Managed AI gateway returned an empty response');
-  return { responseText, model: json.model || 'auto', latencyMs: Date.now() - start };
+  const model = typeof json.model === 'string' && json.model.trim() ? json.model : 'unknown';
+  return { responseText, model, latencyMs: Date.now() - start };
 }
 
 export async function queryWorkersAi(
@@ -376,6 +377,36 @@ interface ConfigRow {
   competitors: string; // JSON stringified { name: string }[]
 }
 
+export type MentionCheckSource = 'byok' | 'free-ai';
+
+export type MentionCheckSourceResolution =
+  | { source: MentionCheckSource; error: null }
+  | { source: null; error: string };
+
+/** Selects a configured custom endpoint or the existing managed gateway. */
+export function resolveMentionCheckSource(
+  config: Pick<ConfigRow, 'ai_endpoint_url' | 'ai_api_key' | 'ai_model' | 'brand_name'>,
+  managedGateway: AiGatewayBinding | undefined,
+): MentionCheckSourceResolution {
+  if (!config.brand_name?.trim()) {
+    return { source: null, error: 'Complete the brand profile before running AI checks.' };
+  }
+
+  const endpoint = config.ai_endpoint_url?.trim() || null;
+  const apiKey = config.ai_api_key?.trim() || null;
+  const model = config.ai_model?.trim() || null;
+  const hasCustomSetup = !!(endpoint || apiKey || model);
+  if (endpoint && apiKey && model) return { source: 'byok', error: null };
+  if (hasCustomSetup) {
+    return {
+      source: null,
+      error: 'Custom AI setup is incomplete. Finish configuring the endpoint URL, API key, and model.',
+    };
+  }
+  if (!managedGateway) return { source: null, error: 'Managed AI is unavailable.' };
+  return { source: 'free-ai', error: null };
+}
+
 interface PromptRow {
   id: string;
   prompt_text: string;
@@ -391,26 +422,30 @@ export async function runMentionCheck(
   config: ConfigRow,
   prompts: PromptRow[],
   checkId: string,
-  projectId: string
+  projectId: string,
+  managedGateway?: AiGatewayBinding,
 ): Promise<void> {
   const brandAliases: string[] = JSON.parse(config.brand_aliases);
   const competitors: { name: string }[] = JSON.parse(config.competitors);
 
-  if (!config.ai_endpoint_url || !config.ai_api_key || !config.ai_model) {
+  const resolution = resolveMentionCheckSource(config, managedGateway);
+  if (!resolution.source) {
     await db.updateCheck(checkId, {
       status: 'failed',
-      summary: 'AI endpoint not configured. Set endpoint URL, API key, and model in settings.',
+      summary: resolution.error,
       completed_at: new Date().toISOString(),
     });
     return;
   }
 
-  const endpointConfig: AiEndpointConfig = {
-    endpointUrl: config.ai_endpoint_url,
-    apiKey: config.ai_api_key,
-    model: config.ai_model,
-  };
-  const platform = detectAIPlatform(config.ai_endpoint_url);
+  const endpointConfig = resolution.source === 'byok' ? {
+    endpointUrl: config.ai_endpoint_url!.trim(),
+    apiKey: config.ai_api_key!.trim(),
+    model: config.ai_model!.trim(),
+  } : null;
+  const platform: AIPlatform = resolution.source === 'byok'
+    ? detectAIPlatform(endpointConfig!.endpointUrl)
+    : 'free-ai';
 
   let completedQueries = 0;
   let mentionCount = 0;
@@ -420,7 +455,9 @@ export async function runMentionCheck(
   try {
     for (const prompt of prompts) {
       try {
-        const response = await queryEndpoint(endpointConfig, prompt.prompt_text);
+        const response = endpointConfig
+          ? await queryEndpoint(endpointConfig, prompt.prompt_text)
+          : await queryManagedGateway(managedGateway, prompt.prompt_text, { projectId: 'mentionpilot' });
         const analysis = analyzeResponse(
           response.responseText,
           config.brand_name,
@@ -460,7 +497,7 @@ export async function runMentionCheck(
           prompt_id: prompt.id,
           prompt_text: prompt.prompt_text,
           platform,
-          model: endpointConfig.model,
+          model: endpointConfig?.model ?? 'unknown',
           provider_status: 'error',
           error_message: errorMessage,
           response_text: '',

@@ -23,6 +23,9 @@ MentionPilot makes AI visibility explainable. It keeps the evidence behind the r
 - Evidence-readiness audits are deterministic heuristics and must be labelled as such.
 - Hacker News and the bounded Reddit Insights archive are supported social inputs; F5Bot and Google Trends remain planned.
 - MentionPilot owns brand-specific interpretation and action, not bulk Reddit collection, general news publishing, or automatic public replies.
+- Owned projects share one workspace selector. Project-bound evidence and drafts reset when switching.
+- Saved brand profiles without custom endpoint settings use the existing free-ai service for manual and scheduled checks. Returned model identity, answers, citations and failures remain inspectable; this does not measure consumer-assistant coverage. Partial custom setups must be completed; working BYOK setups keep their direct endpoint.
+- Schedules are explicitly saved as off, daily or weekly. Daily attempts run at 06:00 UTC; weekly attempts run on Monday. Email and Slack alerts are unavailable.
 - The public free check is the primary acquisition action; the signed-in workspace is the ongoing product.
 - No customer counts, performance benchmarks, pricing, or provider-availability claims may be invented.
 

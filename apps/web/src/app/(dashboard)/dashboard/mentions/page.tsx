@@ -176,6 +176,7 @@ export default function MentionsPage() {
 
   const saveConfig = async () => {
     setSaving(true);
+    setError(null);
     try {
       const payload: Record<string, unknown> = {
         brand_name: brandName,
@@ -214,6 +215,7 @@ export default function MentionsPage() {
   const addPrompt = async () => {
     if (!newPrompt.trim()) return;
     setAddingPrompt(true);
+    setError(null);
     try {
       const prompt = await apiFetch<PromptRecord>(
         `/v1/prompts/${projectId}`,
@@ -246,6 +248,7 @@ export default function MentionsPage() {
 
   const runCheck = async () => {
     setRunningCheck(true);
+    setError(null);
     try {
       const check = await apiFetch<CheckRecord>(
         `/v1/checks/${projectId}`,
@@ -253,7 +256,8 @@ export default function MentionsPage() {
       );
       setPollingCheck(check.id);
       setChecks((prev) => [check, ...prev]);
-    } catch {
+    } catch (err) {
+      setError((err as Error).message);
       setRunningCheck(false);
     }
   };
@@ -311,7 +315,7 @@ export default function MentionsPage() {
             Brand Configuration
           </CardTitle>
           <CardDescription>
-            Set up your brand details and AI endpoint.
+            Save your brand profile, choose buyer questions, and inspect the returned answers.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -337,16 +341,18 @@ export default function MentionsPage() {
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label>Aliases (comma-separated)</Label>
+              <Label htmlFor="brand-aliases">Aliases (comma-separated)</Label>
               <Input
+                id="brand-aliases"
                 placeholder="Alias 1, Alias 2"
                 value={brandAliases}
                 onChange={(e) => setBrandAliases(e.target.value)}
               />
             </div>
             <div className="space-y-2">
-              <Label>Competitors (comma-separated, max 5)</Label>
+              <Label htmlFor="brand-competitors">Competitors (comma-separated, max 5)</Label>
               <Input
+                id="brand-competitors"
                 placeholder="Competitor A, Competitor B"
                 value={competitors}
                 onChange={(e) => setCompetitors(e.target.value)}
@@ -356,8 +362,9 @@ export default function MentionsPage() {
 
           <Separator />
 
+          <details className="mp-custom-endpoint mp-profile">
+            <summary>Community signal profile (optional)</summary>
           <div>
-            <h4 className="text-sm font-medium">Signal profile</h4>
             <p className="text-xs text-muted-foreground mt-1">
               Used to rank source-backed findings. Reddit communities must exist in the published Reddit Insights archive.
             </p>
@@ -403,16 +410,23 @@ export default function MentionsPage() {
             </div>
           </div>
 
+          </details>
+
           <Separator />
 
           <h4 className="text-sm font-medium flex items-center gap-2">
             <Key className="h-4 w-4" />
-            AI Endpoint
+            AI check source
           </h4>
           <p className="text-xs text-muted-foreground">
-            Any OpenAI-compatible API endpoint. Works with OpenAI, OpenRouter,
-            Together, Groq, local models, and more.
+            {config?.ai_endpoint_url || config?.ai_model || config?.has_ai_api_key
+              ? "Saved custom settings are used for checks. Your endpoint, model and API key must all be configured."
+              : "New brand profiles use Fleet free-ai without a personal API key. Save your brand name, add buyer questions, then run a check."}
           </p>
+          <p className="text-xs text-muted-foreground">Free-ai uses a routed model and records its returned identity with the answer. It does not establish visibility across ChatGPT, Claude, Gemini or Perplexity consumer products.</p>
+          <details className="mp-custom-endpoint" open={!!(config?.ai_endpoint_url || config?.ai_model || config?.has_ai_api_key)}>
+            <summary>Use your own endpoint (optional)</summary>
+            <p className="text-xs text-muted-foreground my-3">Use an OpenAI-compatible endpoint with your model and API key. Saved keys are never shown back. Provider costs depend on your account.</p>
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="ai-endpoint-url">
@@ -505,12 +519,12 @@ export default function MentionsPage() {
             </div>
           </div>
 
-          <div className="rounded-md border p-4">
+          <div className="rounded-md border p-4 mt-4">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-sm font-medium">Provider evidence coverage</p>
                 <p className="text-xs text-muted-foreground">
-                  A provider is observed only after a successful response from its direct endpoint.
+                  Direct endpoint coverage is shown below. Free-ai results retain their own source label and do not count as direct observations of these providers.
                 </p>
               </div>
               {configuredProvider === "custom" && <Badge variant="secondary">Custom endpoint configured</Badge>}
@@ -530,6 +544,8 @@ export default function MentionsPage() {
               })}
             </div>
           </div>
+
+          </details>
 
           <div className="flex justify-end">
             <Button
@@ -570,6 +586,7 @@ export default function MentionsPage() {
                   <Button
                     variant="ghost"
                     size="sm"
+                    aria-label={`Delete prompt: ${prompt.prompt_text}`}
                     onClick={() => deletePrompt(prompt.id)}
                   >
                     <Trash2 className="h-4 w-4" />
@@ -586,21 +603,24 @@ export default function MentionsPage() {
             </p>
           )}
 
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Input
+              aria-label="Buyer question"
               placeholder="What's the best [category] tool?"
               value={newPrompt}
               onChange={(e) => setNewPrompt(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && addPrompt()}
-              className="flex-1"
+              className="flex-1 min-w-[180px]"
             />
             <Input
+              aria-label="Prompt category"
               placeholder="Category"
               value={promptCategory}
               onChange={(e) => setPromptCategory(e.target.value)}
               className="w-32"
             />
             <Button
+              aria-label="Add prompt"
               onClick={addPrompt}
               disabled={addingPrompt || !newPrompt.trim()}
               size="sm"

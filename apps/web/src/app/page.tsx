@@ -1,3 +1,4 @@
+import { MentionPilotMark } from "@/components/mentionpilot-mark";
 import type { Metadata } from "next";
 import Link from "next/link";
 import styles from "./page.module.css";
@@ -59,16 +60,6 @@ const workflow = [
   },
 ];
 
-function Mark() {
-  return (
-    <svg viewBox="0 0 36 36" role="img" aria-label="MentionPilot mark">
-      <circle cx="18" cy="18" r="15.25" fill="none" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M9 20.5c4.5-6 13.5-6 18 0" fill="none" stroke="currentColor" strokeWidth="1.5" />
-      <circle cx="18" cy="18" r="3.4" fill="currentColor" />
-      <path d="M18 3v5M18 28v5" stroke="currentColor" strokeWidth="1.5" />
-    </svg>
-  );
-}
 
 function Arrow() {
   return (
@@ -93,7 +84,7 @@ export default function Home() {
       <header className={styles.header}>
         <div className={styles.headerInner}>
           <Link href="/" className={styles.brand} aria-label="MentionPilot home">
-            <span className={styles.mark}><Mark /></span>
+            <span className={styles.mark}><MentionPilotMark /></span>
             <span>MentionPilot</span>
           </Link>
           <nav className={styles.nav} aria-label="Primary navigation">
@@ -309,7 +300,7 @@ export default function Home() {
               <span>No signup required for the first check.</span>
             </div>
           </div>
-          <div className={styles.finalMark} aria-hidden="true"><Mark /></div>
+          <div className={styles.finalMark} aria-hidden="true"><MentionPilotMark /></div>
         </section>
       </main>
 
