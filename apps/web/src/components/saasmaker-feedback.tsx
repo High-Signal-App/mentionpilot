@@ -1,14 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { FeedbackWidget } from "@saas-maker/feedback";
 import "@saas-maker/feedback/dist/index.css";
+import styles from "./saasmaker-feedback.module.css";
 
 const API_BASE = "https://api.sassmaker.com";
 const CATALOG_ID = "mentionpilot";
 
 export function SaaSMakerFeedback() {
   const [projectKey, setProjectKey] = useState("");
+  const isWorkspace = usePathname().startsWith("/dashboard");
 
   useEffect(() => {
     let active = true;
@@ -32,11 +35,23 @@ export function SaaSMakerFeedback() {
 
   if (!projectKey) return null;
   return (
-    <FeedbackWidget
-      projectId={projectKey}
-      apiBaseUrl={API_BASE}
-      position="bottom-right"
-      theme="dark"
-    />
+    <footer
+      className={`${styles.support} ${isWorkspace ? styles.workspace : ""}`}
+      aria-labelledby="feedback-heading"
+    >
+      <div className={styles.section}>
+        <div>
+          <h2 id="feedback-heading">Help shape MentionPilot.</h2>
+          <p>Have a question or an idea? Send us feedback.</p>
+        </div>
+        <FeedbackWidget
+          projectId={projectKey}
+          apiBaseUrl={API_BASE}
+          position="bottom-right"
+          theme="dark"
+          triggerText="Send feedback"
+        />
+      </div>
+    </footer>
   );
 }

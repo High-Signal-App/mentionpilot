@@ -1,0 +1,50 @@
+[
+  {
+    "width": 390,
+    "status": 200,
+    "position": "static",
+    "insideFooter": true,
+    "height": 44,
+    "top": 798.9375,
+    "ctaBottom": 393.46875,
+    "overlap": false,
+    "overflow": false,
+    "focusVisible": true,
+    "focusOutline": "rgb(23, 22, 19) solid 2px",
+    "keyboardOpens": true,
+    "escapeCloses": true,
+    "errors": []
+  },
+  {
+    "width": 768,
+    "status": 200,
+    "position": "static",
+    "insideFooter": true,
+    "height": 44,
+    "top": 793.359375,
+    "ctaBottom": 580.4375,
+    "overlap": false,
+    "overflow": false,
+    "focusVisible": true,
+    "focusOutline": "rgb(23, 22, 19) solid 2px",
+    "keyboardOpens": true,
+    "escapeCloses": true,
+    "errors": []
+  },
+  {
+    "width": 1440,
+    "status": 200,
+    "position": "static",
+    "insideFooter": true,
+    "height": 44,
+    "top": 794.1875,
+    "ctaBottom": 518.875,
+    "overlap": false,
+    "overflow": false,
+    "focusVisible": true,
+    "focusOutline": "rgb(23, 22, 19) solid 2px",
+    "keyboardOpens": true,
+    "escapeCloses": true,
+    "errors": []
+  }
+]

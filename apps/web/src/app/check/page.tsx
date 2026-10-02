@@ -19,6 +19,24 @@ interface FreeCheckResult {
   latency_ms: number | null;
 }
 
+interface FreeCheckResponse {
+  id?: string;
+  brand_name?: string;
+  status?: string;
+  results?: FreeCheckResult[];
+  mention_rate?: number | null;
+  error?: string;
+}
+
+function isEvidence(value: unknown): value is FreeCheckResult {
+  if (!value || typeof value !== "object") return false;
+  const result = value as Record<string, unknown>;
+  return ["prompt", "platform", "model", "response_preview"].every((key) => typeof result[key] === "string")
+    && typeof result.brand_mentioned === "boolean"
+    && typeof result.brand_cited === "boolean"
+    && (result.brand_position === null || (typeof result.brand_position === "number" && Number.isFinite(result.brand_position)));
+}
+
 function Mark() {
   return (
     <svg viewBox="0 0 36 36" role="img" aria-label="MentionPilot mark">
@@ -43,45 +61,56 @@ export default function FreeCheckPage() {
     if (!domain.trim()) return;
     setLoading(true);
     setError(null);
+    setBrandName(null);
     setResults([]);
     setMentionRate(null);
     setExpandedIdx(null);
 
+    const deadline = Date.now() + 180_000;
+    const request = async (path: string, init?: RequestInit) => {
+      const remaining = deadline - Date.now();
+      if (remaining <= 0) throw new Error("The check timed out. You can retry.");
+      const signal = AbortSignal.timeout(Math.min(remaining, init ? 120_000 : 30_000));
+      try {
+        const response = await fetch(path, { ...init, signal });
+        if (!response.ok) throw new Error(`The check service is unavailable (${response.status}). You can retry.`);
+        return await response.json() as FreeCheckResponse | null;
+      } catch (error) {
+        if (signal.aborted) throw new Error("The check timed out. You can retry.");
+        throw error;
+      }
+    };
+
     try {
-      const startRes = await fetch(`${API_BASE}/v1/free-check`, {
+      const startData = await request(`${API_BASE}/v1/free-check`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ domain: domain.trim() }),
       });
-
-      if (!startRes.ok) {
-        const err = await startRes.json();
-        throw new Error((err as Record<string, string>).error || "Check failed");
+      if (!startData || typeof startData.id !== "string" || !startData.id || typeof startData.brand_name !== "string") {
+        throw new Error("The check service returned an invalid response. You can retry.");
       }
-
-      const startData = (await startRes.json()) as { id: string; brand_name: string };
       setBrandName(startData.brand_name);
 
-      let completed = false;
-      while (!completed) {
+      while (true) {
         await new Promise((resolve) => setTimeout(resolve, 2000));
-        const pollRes = await fetch(`${API_BASE}/v1/free-check/${startData.id}`);
-        const data = (await pollRes.json()) as {
-          status: string;
-          results?: FreeCheckResult[];
-          mention_rate?: number | null;
-          error?: string;
-        };
-
-        if (data.status !== "running") {
-          completed = true;
-          setResults(data.results || []);
-          if (data.status === "failed") {
-            setError(data.error || "The check did not return enough evidence for a reliable score.");
-          } else {
-            setMentionRate(data.mention_rate ?? null);
-          }
+        const data = await request(`${API_BASE}/v1/free-check/${encodeURIComponent(startData.id)}`);
+        if (!data || typeof data.status !== "string" || !["running", "completed", "failed"].includes(data.status)) {
+          throw new Error("The check service returned an unknown status. You can retry.");
         }
+        if (data.status === "running") continue;
+        if (data.status === "failed") {
+          setResults(Array.isArray(data.results) ? data.results.filter(isEvidence) : []);
+          setError(typeof data.error === "string" ? data.error : "The check did not return enough evidence for a reliable score.");
+        } else {
+          const rate = data.mention_rate;
+          if (!Array.isArray(data.results) || data.results.length === 0 || !data.results.every(isEvidence) || !(rate === null || (typeof rate === "number" && Number.isFinite(rate) && rate >= 0 && rate <= 1))) {
+            throw new Error("The check service returned incomplete evidence. You can retry.");
+          }
+          setResults(data.results);
+          setMentionRate(rate);
+        }
+        break;
       }
     } catch (caughtError) {
       setError((caughtError as Error).message);
@@ -190,7 +219,7 @@ export default function FreeCheckPage() {
               <Loader2 aria-hidden="true" />
               <div>
                 <strong>Building the evidence record for {brandName || domain}</strong>
-                <p>Reading the site, generating questions, and preserving the response. This can take up to a minute.</p>
+                <p>Reading the site, generating questions, and preserving the response. Usually about a minute; we stop after three minutes so you can retry.</p>
               </div>
               <span className={styles.loadingRule} aria-hidden="true" />
             </div>

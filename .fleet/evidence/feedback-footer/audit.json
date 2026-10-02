@@ -1,0 +1,16 @@
+{
+  "reviewer": "Independent audit_site_health agent",
+  "scope": "Feedback footer on /check",
+  "score": 18,
+  "maximum": 20,
+  "p0": 0,
+  "p1": 0,
+  "detectorFindings": [],
+  "runtimeProof": "independent-B-final-token-footer-verification.json",
+  "findings": [
+    "390/768/1440 static placement,44px action,no overlap/overflow/errors,visible2px focus offset4,Enter/Escape passed",
+    "No real POST: synthetic free-check/config fixtures",
+    "Dashboard dark theme final token not exercised against authenticated owner data",
+    "Computed contrast/shadow on final server instance not measured; source/screenshot evidence only"
+  ]
+}
