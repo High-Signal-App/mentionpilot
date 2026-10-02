@@ -273,13 +273,14 @@ describe('runMentionCheck with managed AI', () => {
     };
     const managedFetch = vi.fn(async () => new Response('private upstream body omitted', { status: 503 }));
 
-    await runMentionCheck(db, config, prompt, 'check-2', 'project-1', { fetch: managedFetch });
+    const outcome = await runMentionCheck(db, config, prompt, 'check-2', 'project-1', { fetch: managedFetch });
 
     expect(results[0]).toMatchObject({
       project_id: 'project-1', platform: 'free-ai', model: 'unknown', provider_status: 'error',
-      error_message: 'Managed AI gateway error (503)', response_text: '', citations: '[]',
+      error_message: 'Provider returned an error (503)', response_text: '', citations: '[]',
     });
     expect(updates.at(-1)).toMatchObject({ status: 'failed', brand_mention_rate: null });
+    expect(outcome).toMatchObject({ status: 'failed', attemptedQueries: 1, successfulQueries: 0, failedQueries: 1, checkId: 'check-2' });
   });
 });
 

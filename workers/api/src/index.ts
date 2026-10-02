@@ -151,9 +151,10 @@ async function runScheduledCheck(
   project: Record<string, any>,
   env: Bindings
 ) {
+  let checkId: string | undefined;
   try {
     const promptList = await db.listPrompts(project.id);
-    if (promptList.length === 0) return;
+    if (promptList.length === 0) return { status: 'skipped' as const, reason: 'no-prompts' as const };
 
     const source = resolveMentionCheckSource({
       brand_name: project.brand_name,
@@ -161,9 +162,9 @@ async function runScheduledCheck(
       ai_api_key: project.ai_api_key ?? null,
       ai_model: project.ai_model ?? null,
     }, env.FREE_AI);
-    if (!source.source) return;
+    if (!source.source) return { status: 'skipped' as const, reason: 'source-not-ready' as const };
 
-    const checkId = crypto.randomUUID();
+    checkId = crypto.randomUUID();
     const totalQueries = promptList.length;
 
     await db.createCheck({
@@ -183,9 +184,30 @@ async function runScheduledCheck(
       competitors: project.competitors,
     };
 
-    await runMentionCheck(db, config, promptList, checkId, project.id, env.FREE_AI);
+    const outcome = await runMentionCheck(db, config, promptList, checkId, project.id, env.FREE_AI);
+    // The cursor records the last persisted terminal attempt, including provider failure,
+    // so a recurring failure cannot trigger an extra paid call every cron invocation.
     await db.updateProjectLastCheck(project.id);
+    if (outcome.status === 'failed') {
+      throw new Error('Scheduled check reached a persisted failed outcome');
+    }
+    if (outcome.status === 'partial') {
+      console.warn('Scheduled check completed partially', {
+        checkId: outcome.checkId,
+        attemptedQueries: outcome.attemptedQueries,
+        successfulQueries: outcome.successfulQueries,
+        failedQueries: outcome.failedQueries,
+      });
+    }
+    return outcome;
   } catch (err) {
-    console.error(`Scheduled check failed for project ${project.id}:`, err);
+    const message = err instanceof Error && err.message === 'Scheduled check reached a persisted failed outcome'
+      ? 'persisted-failed-outcome'
+      : 'operational-failure';
+    const projectId = typeof project.id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(project.id)
+      ? project.id
+      : 'unknown';
+    console.error('Scheduled check failed', { outcome: message, projectId, ...(checkId ? { checkId } : {}) });
+    throw new Error('Scheduled check did not complete successfully');
   }
 }
