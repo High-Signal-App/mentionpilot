@@ -46,7 +46,6 @@ function executionContext(waits: Promise<unknown>[]): ExecutionContext {
 
 const baseEnv: Bindings = {
   DB: {} as D1Database,
-  AI: {} as Ai,
   ENVIRONMENT: 'production',
 };
 

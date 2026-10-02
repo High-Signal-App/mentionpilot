@@ -1,5 +1,5 @@
 import { afterEach, describe, it, expect, vi } from 'vitest';
-import { analyzeResponse, detectAIPlatform, queryEndpoint, queryWorkersAi, SharedNeuronBudgetUnavailableError } from '../lib/ai-engine';
+import { analyzeResponse, detectAIPlatform, queryEndpoint, queryManagedGateway, queryWorkersAi, SharedNeuronBudgetUnavailableError } from '../lib/ai-engine';
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -156,6 +156,35 @@ describe('queryEndpoint', () => {
       apiKey: 'test-key',
       model: 'auto',
     }, 'Example prompt')).rejects.toThrow('AI endpoint refused redirect (302)');
+  });
+});
+
+describe('queryManagedGateway', () => {
+  it('sends MentionPilot requests through the private binding with bounded JSON output', async () => {
+    const fetch = vi.fn(async (request: Request) => {
+      expect(new URL(request.url).pathname).toBe('/v1/chat/completions');
+      expect(request.headers.get('x-gateway-project-id')).toBe('mentionpilot');
+      expect(request.headers.get('authorization')).toBe('Bearer gateway-managed');
+      const body = await request.json() as Record<string, unknown>;
+      expect(body.model).toBe('auto');
+      expect(body.max_tokens).toBe(800);
+      expect(body.project_id).toBe('mentionpilot');
+      expect(body.response_format).toEqual({ type: 'json_object' });
+      return Response.json({ choices: [{ message: { content: 'x'.repeat(5_000) } }] });
+    });
+
+    const result = await queryManagedGateway({ fetch }, 'brand prompt', {
+      json: true,
+      maxTokens: 800,
+      projectId: 'mentionpilot',
+    });
+
+    expect(result.responseText).toHaveLength(4_000);
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('fails closed when the service binding is absent', async () => {
+    await expect(queryManagedGateway(undefined, 'brand prompt')).rejects.toThrow('Managed AI gateway is unavailable');
   });
 });
 

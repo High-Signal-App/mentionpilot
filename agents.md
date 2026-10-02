@@ -66,7 +66,7 @@ bash scripts/build-badge.sh
 - **D1 migrations** in `packages/db/migrations/`; `wrangler.toml` points there via `migrations_dir`.
 - **Daily cron**: Worker checks AI mentions at 06:00 UTC and stores results in D1.
 - **Brand intelligence utilities**: `packages/shared/src/brand-intelligence.ts` owns the deterministic evidence audit, reusable competitor prompt set, perception clustering, and community-opportunity ranking. These are product-domain primitives; they do not generate synthetic provider results.
-- **AI provider config**: `FREE_AI_ENDPOINT_URL`, `FREE_AI_API_KEY`, `FREE_AI_MODEL` set in CF dashboard — never hardcoded.
+- **AI provider config**: Public free checks use the private `FREE_AI` service binding to Fleet's managed gateway. Per-brand BYOK endpoint settings remain stored in D1. Never hardcode provider keys.
 - **Badge widget**: self-contained Vite build, `dist/` is the publish artifact. Embeddable "mentioned by AI" badge for customers.
 - **Velite**: used in `apps/web` for MDX content processing (blog/docs).
 - `@saas-maker/ops` is consumed as a published npm package. OpenAI-compatible transport and model discovery are repo-local so installs do not depend on an unavailable package.
