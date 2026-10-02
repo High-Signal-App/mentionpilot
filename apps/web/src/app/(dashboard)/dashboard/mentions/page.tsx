@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Eye,
   Plus,
@@ -68,6 +68,12 @@ export default function MentionsPage() {
   const [checks, setChecks] = useState<CheckRecord[]>([]);
   const [latestResults, setLatestResults] = useState<ResultRecord[]>([]);
   const [expandedResult, setExpandedResult] = useState<string | null>(null);
+  const activePage = useRef(true);
+  const reportUrl = useRef<string | null>(null);
+  const [download, setDownload] = useState<{ url: string; filename: string } | null>(null);
+  useEffect(() => { activePage.current = true; return () => { activePage.current = false; if (reportUrl.current) URL.revokeObjectURL(reportUrl.current); }; }, []);
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   // Config form
   const [brandName, setBrandName] = useState("");
@@ -235,6 +241,31 @@ export default function MentionsPage() {
     } finally {
       setAddingPrompt(false);
     }
+  };
+
+  const exportLatestReport = async () => {
+    if (!projectId || exporting) return;
+    setExporting(true);
+    setExportError(null);
+    setDownload(null);
+    if (reportUrl.current) { URL.revokeObjectURL(reportUrl.current); reportUrl.current = null; }
+    try {
+      const data = await apiFetch<{ report: unknown }>(`/v1/reports/${projectId}/generate`, { method: "POST" });
+      if (!activePage.current) return;
+      const url = URL.createObjectURL(new Blob([JSON.stringify(data.report, null, 2)], { type: "application/json" }));
+      reportUrl.current = url;
+      const filename = `mentionpilot-${projectId}-${new Date().toISOString().slice(0, 10)}.json`;
+      setDownload({ url, filename });
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+    } catch (err) {
+      setExportError((err as Error).message);
+    } finally { setExporting(false); }
   };
 
   const deletePrompt = async (id: string) => {
@@ -657,6 +688,13 @@ export default function MentionsPage() {
         </Button>
       </div>
 
+      {checks.length > 0 && <div className="flex flex-wrap items-center gap-3">
+        <Button variant="outline" disabled={exporting} onClick={exportLatestReport}>{exporting ? "Preparing report…" : "Download latest report"}</Button>
+        <p className="text-xs text-muted-foreground">JSON with the latest project check, retained answers and recent history. An older selected check does not change this export.</p>
+        {download && <p role="status" className="w-full text-sm">Report prepared. If the download did not start, <a className="underline underline-offset-4" href={download.url} download={download.filename}>Download JSON</a>.</p>}
+        {exportError && <p role="alert" className="w-full text-sm text-destructive">{exportError}</p>}
+      </div>}
+
       {/* Results */}
       {latestResults.length > 0 && (
         <Card>
@@ -739,6 +777,7 @@ export default function MentionsPage() {
                           </div>
                         )}
                         <div className="flex flex-wrap gap-2 text-xs">
+                          <span className="text-muted-foreground">Source: {result.platform === "free-ai" ? "Fleet free-ai" : result.platform}</span>
                           <span className="text-muted-foreground">
                             Model: {result.model}
                           </span>
