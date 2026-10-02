@@ -44,7 +44,7 @@ export default function ToolsPage() {
           </Link>
           <h1 className="text-4xl font-bold tracking-tight">Free AI Visibility Tools</h1>
           <p className="text-lg text-muted-foreground max-w-lg mx-auto">
-            Check, analyze, and optimize how AI assistants see your brand. All free, no signup.
+            Check, analyze, and optimize how AI assistants see your brand. The brand check needs no signup. GEO, crawlability, and llms.txt tools require a free account.
           </p>
         </div>
 

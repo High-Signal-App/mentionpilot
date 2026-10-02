@@ -210,9 +210,9 @@
   background: var(--paper-deep);
 }
 
-.scoreBox { min-height: 190px; padding: 1.4rem; display: flex; flex-direction: column; justify-content: space-between; border-right: 1px solid var(--ink); background: var(--ink); color: var(--paper); }
+.scoreBox { container-type: inline-size; min-width: 0; min-height: 190px; padding: 1.4rem; display: flex; flex-direction: column; justify-content: space-between; border-right: 1px solid var(--ink); background: var(--ink); color: var(--paper); }
 .scoreBox > span { color: var(--night-soft); }
-.scoreBox strong { font-family: Iowan Old Style, Palatino Linotype, Book Antiqua, Georgia, serif; font-size: clamp(3.5rem, 7vw, 5.8rem); font-weight: 500; letter-spacing: -0.07em; line-height: 0.8; }
+.scoreBox strong { font-family: Iowan Old Style, Palatino Linotype, Book Antiqua, Georgia, serif; font-size: clamp(2.4rem, 32cqi, 5.8rem); font-weight: 500; letter-spacing: -0.07em; line-height: 0.8; }
 .resultCopy { padding: 1.4rem; }
 .resultCopy h2 { margin: 0.5rem 0 1rem; font-size: clamp(1.7rem, 3.5vw, 2.6rem); line-height: 1.05; }
 .resultStamp { display: inline-flex; padding: 0.42rem 0.6rem; border: 1px solid var(--signal-deep); color: var(--signal-deep); font-family: var(--font-geist-mono), monospace; font-size: 0.62rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; transform: rotate(-1deg); }
@@ -287,7 +287,7 @@
   .inputRow { grid-template-columns: 1fr; }
   .inputRow button { width: 100%; }
   .resultSummary { grid-template-columns: 1fr; }
-  .scoreBox { min-height: 150px; border-right: 0; border-bottom: 1px solid var(--ink); }
+  .scoreBox { container-type: inline-size; min-width: 0; min-height: 150px; border-right: 0; border-bottom: 1px solid var(--ink); }
   .resultItem > button { grid-template-columns: 22px 74px minmax(0, 1fr); padding-right: 1rem; padding-left: 1rem; }
   .position { grid-column: 3; }
   .prompt { grid-column: 2 / -1; white-space: normal; }
