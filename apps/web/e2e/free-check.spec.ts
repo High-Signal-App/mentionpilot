@@ -20,6 +20,26 @@ test('page exposes the public no-signup check', async ({ page }) => {
   await expect(page.getByText('No signup', { exact: true })).toBeVisible();
 });
 
+test('domain input waits for hydration before accepting edits', async ({ page }) => {
+  let release!: () => void;
+  const scriptsReady = new Promise<void>(resolve => { release = resolve; });
+  await page.route('**/_next/static/chunks/**', async route => {
+    await scriptsReady;
+    await route.continue();
+  });
+  try {
+    await page.goto('/check', { waitUntil: 'commit' });
+    const domain = page.locator('#brand-domain');
+    await expect(domain).toBeDisabled();
+    release();
+    await expect(domain).toBeEnabled();
+    await domain.fill('https://example.test');
+    await expect(page.getByRole('button', { name: 'Run check', exact: true })).toBeEnabled();
+  } finally {
+    release();
+  }
+});
+
 for (const problem of ['503', 'unknown', 'incomplete', 'empty-scored', 'malformed-record']) {
   test(`poll ${problem} is an explicit error and permits retry`, async ({ page }) => {
     let recovered = false;

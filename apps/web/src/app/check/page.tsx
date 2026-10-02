@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { CircleCheckBig, Loader2, Search, X } from "lucide-react";
 import { API_BASE } from "@/lib/api-base";
@@ -49,6 +49,7 @@ function Mark() {
 }
 
 export default function FreeCheckPage() {
+  const [clientReady, setClientReady] = useState(false);
   const [domain, setDomain] = useState("");
   const [loading, setLoading] = useState(false);
   const [brandName, setBrandName] = useState<string | null>(null);
@@ -56,6 +57,8 @@ export default function FreeCheckPage() {
   const [mentionRate, setMentionRate] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
+
+  useEffect(() => { setClientReady(true); }, []);
 
   const runCheck = async () => {
     if (!domain.trim()) return;
@@ -196,7 +199,7 @@ export default function FreeCheckPage() {
                   placeholder="https://yourproduct.com"
                   value={domain}
                   onChange={(event) => setDomain(event.target.value)}
-                  disabled={loading}
+                  disabled={loading || !clientReady}
                 />
                 <button type="submit" disabled={loading || !domain.trim()}>
                   {loading ? <Loader2 aria-hidden="true" /> : <Search aria-hidden="true" />}

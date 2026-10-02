@@ -1,0 +1,163 @@
+{
+  "$schema": "fleet.design-review.v2",
+  "version": 2,
+  "project": "mentionpilot",
+  "target": "Public-check readiness; preserve merged Signal Room and approved A footer",
+  "surfaceMode": "operate",
+  "mode": "preserve",
+  "register": "product",
+  "context": {
+    "product": "PRODUCT.md",
+    "design": "DESIGN.md"
+  },
+  "direction": {
+    "source": "existing",
+    "references": [
+      "Existing MentionPilot Signal Room PRODUCT.md/DESIGN.md",
+      "Owner-approved A support footer already merged in PR15"
+    ],
+    "probes": [],
+    "selected": "signal-room-and-footer-a",
+    "approval": "not-required",
+    "ownerEvidence": {
+      "path": "",
+      "quote": ""
+    },
+    "supplied": "",
+    "before": ".fleet/evidence/feedback-footer/after-390.png",
+    "library": {
+      "strategy": "upstream-first",
+      "primary": "existing-project-system",
+      "sources": [],
+      "runtime": "existing",
+      "customReplacement": {
+        "used": false,
+        "authorization": "not-required",
+        "reason": ""
+      }
+    },
+    "contract": {
+      "purpose": "Run an anonymous evidence check without losing input during client startup; keep failed checks explicit and support in normal page flow.",
+      "purposeSource": "MentionPilot #16 and SaaS Maker #163; owner selected direction A on 2026-10-02",
+      "canonicalPurpose": "One shared in-flow footer support section opens the existing feedback dialog while preserving each product's own page and newsletter experience.",
+      "purposeAlignment": "match",
+      "driftNote": "",
+      "audience": "Visitors using products that include the shared footer integration or React package",
+      "job": "Enter a domain, inspect retained answer evidence, recover from failed checks and reach support.",
+      "thesis": "Client readiness and observed evidence remain explicit; preserve the current paper-and-red composition.",
+      "system": "MentionPilot Signal Room paper, ink and signal-red tokens for public pages; incumbent workspace variables on dashboard routes; installed @saas-maker/feedback dialog retained with a scoped static trigger and explicit keyboard focus.",
+      "signature": "A ruled paper support section with a signal-red action after the check or page content.",
+      "risk": "The action is less immediately discoverable than a persistent floating button.",
+      "qualityBar": "Preserve Signal Room serif/ink/paper/red composition; keep check/evidence primary and support in normal flow; prevent pre-hydration lost edits, false scores, hidden retry or control overlap; readable and keyboard operable at390/768/1440."
+    }
+  },
+  "evidence": {
+    "screenshots": [
+      {
+        "width": 390,
+        "path": ".fleet/evidence/feedback-footer/after-390.png"
+      },
+      {
+        "width": 768,
+        "path": ".fleet/evidence/feedback-footer/after-768.png"
+      },
+      {
+        "width": 1440,
+        "path": ".fleet/evidence/feedback-footer/after-1440.png"
+      }
+    ],
+    "projectCheck": {
+      "command": "Production webpackbuild/typecheck;11Chrome regressionspassed exit0 includingpaused-JavaScript readiness;12syntheticstate/widthcasespassed exit0; footerkeyboard/clearancepassed3width",
+      "status": "pass"
+    },
+    "critique": {
+      "score": 39,
+      "maximum": 40
+    },
+    "audit": {
+      "score": 18,
+      "maximum": 20
+    },
+    "unresolved": {
+      "p0": 0,
+      "p1": 0
+    },
+    "detector": {
+      "posture": "advisory",
+      "findings": [
+        "Mechanical source detector[]; independent read-only footer browser checks passed",
+        "Pinned advisory rendered scan18 at1280x800; incumbentGeist font is selected Signal Room, no before/afterclaim",
+        "Authenticated dashboard theme and real feedback submission remain unexercised"
+      ]
+    },
+    "comprehension": {
+      "status": "not-applicable",
+      "reviewer": "",
+      "answers": {
+        "product": "",
+        "audience": "",
+        "value": "",
+        "mechanism": "",
+        "proof": "",
+        "nextAction": ""
+      },
+      "purposeScore": {
+        "product": 0,
+        "audience": 0,
+        "value": 0,
+        "mechanism": 0,
+        "proof": 0,
+        "nextAction": 0,
+        "total": 0
+      },
+      "mismatches": []
+    },
+    "visualReview": {
+      "status": "pass",
+      "reviewer": "Independent audit_live design review and audit_site_health browser/audit review; root inspected final renderedcaptures",
+      "direction": "signal-room-and-footer-a",
+      "report": ".fleet/evidence/feedback-footer/rendered-review.md",
+      "checks": {
+        "hierarchy": {
+          "status": "pass",
+          "observation": "Check form and evidence remain primary; support follows the closing CTA."
+        },
+        "typography": {
+          "status": "pass",
+          "observation": "Signal Room serif evidence headlines and legible body copy keep their roles; support wraps without truncation."
+        },
+        "composition": {
+          "status": "pass",
+          "observation": "390 stacks the footer action below copy;768/1440 align it beside copy; document andCTA remain unobstructed."
+        },
+        "identity": {
+          "status": "pass",
+          "observation": "Warm paper, ink rules and signal-red action preserve MentionPilot; vendor dialog reused."
+        },
+        "interaction": {
+          "status": "pass",
+          "observation": "Paused-JavaScript regression proves input disabled until ready;11regressions verify editable input,retry,deadline,expanded evidence;2px keyboardfocus,Enter/Escape established."
+        },
+        "responsive": {
+          "status": "pass",
+          "observation": "390/768/1440 score100% fits its column,44px support action,no horizontaloverflow orpageerrors."
+        }
+      }
+    }
+  },
+  "ownerFeedback": {
+    "decision": "not-required",
+    "note": "Preserve lane keeps already-approved A footer and Signal Room. Earlier direction selection is not owner acceptance of the final implementation."
+  },
+  "qualityBar": {
+    "ownerConcerns": [
+      "Loading states, landing clarity and overall UI quality"
+    ],
+    "requirements": [
+      "Domain input cannot accept an edit before its handler is ready",
+      "Run check becomes available after hydration and valid input",
+      "Keep warm-paper, ink, red and evidence hierarchy",
+      "No control overlay, overflow or hidden keyboard focus at390/768/1440"
+    ]
+  }
+}
