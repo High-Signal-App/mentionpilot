@@ -1,0 +1,221 @@
+{
+  "$schema": "fleet.design-review.v2",
+  "version": 2,
+  "project": "mentionpilot-evidence-release-20261002.wbXxCc",
+  "target": "Download retained report and label answer source in the existing Signal Room results",
+  "surfaceMode": "operate",
+  "mode": "preserve",
+  "register": "product",
+  "context": {
+    "product": "PRODUCT.md",
+    "design": "DESIGN.md"
+  },
+  "direction": {
+    "source": "existing",
+    "references": [
+      "MentionPilot Signal Room landing system (DESIGN.md)",
+      "MentionPilot source receipt and action docket patterns (DESIGN.md)"
+    ],
+    "probes": [],
+    "selected": "existing-signal-room",
+    "approval": "approved",
+    "ownerEvidence": {
+      "path": ".fleet/design-reviews/portfolio-23-selection.json",
+      "quote": "A \u2014 Signal Room (Recommended)"
+    },
+    "supplied": "",
+    "before": ".fleet/design-reviews/report-download/before.jpg",
+    "library": {
+      "strategy": "upstream-first",
+      "primary": "existing-project-system",
+      "sources": [],
+      "runtime": "existing",
+      "customReplacement": {
+        "used": false,
+        "authorization": "not-required",
+        "reason": "Reuse existing React/Radix Button, Input, Label and navigation links. Native select and disclosure provide standard keyboard behavior without a new dependency."
+      }
+    },
+    "contract": {
+      "purpose": "MentionPilot helps founders and marketing teams inspect how configured AI endpoints and supported community sources describe each brand, using retained evidence and accountable follow-up tasks.",
+      "purposeSource": "PRODUCT.md and saas-maker/catalog/projects.json projects[id=mentionpilot].presentation.directory.purposeContract",
+      "canonicalPurpose": "Show how configured AI assistants and supported community sources describe a brand.",
+      "purposeAlignment": "match",
+      "driftNote": "",
+      "audience": "Founders and marketing teams managing several owned brands.",
+      "job": "Review retained answers and download the latest project evidence as JSON.",
+      "thesis": "Carry Signal Room into a working research desk; keep evidence and the active brand obvious.",
+      "system": "Warm paper #F2EEE5, ink #171613, muted ink #625E56, restrained coral #A92E24 actions, rules #C9C0B1. Georgia findings and headings, existing sans controls, mono receipts. Mostly square paper surfaces, readable line lengths, persistent desktop rail and native mobile selector.",
+      "signature": "Named brand case files, evidence receipts and a visible saved schedule state.",
+      "risk": "Editorial typography can reduce density; constrain headings and retain compact controls so multi-project operation remains quick.",
+      "qualityBar": "Preserve the selected Signal Room design. Label source and returned model. Report download calls the existing authenticated report endpoint, excludes credentials, and has visible failure state; older selected history is not presented as the latest export."
+    },
+    "productSurfaces": {
+      "scope": "paired",
+      "landing": "https://mention.highsignal.app/ (apps/web public landing, unchanged)",
+      "app": "apps/web dashboard shell and /dashboard/settings (local implementation); /dashboard/mentions first-value path",
+      "authority": "DESIGN.md"
+    }
+  },
+  "evidence": {
+    "slopScale": {
+      "platform": "web",
+      "posture": "advisory",
+      "reason": "",
+      "checkpoints": [
+        {
+          "stage": "iteration",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs http://127.0.0.1:8794/dashboard/mentions https://mention.highsignal.app/ --json",
+          "report": ".fleet/design-reviews/report-download/iteration.json",
+          "findingsReview": "Reviewed actual paired scans and rendered captures. Existing source labels, functional config cards and public landing method remain intentional. Body dark-theme flag does not describe the scoped paper workspace. Added fallback link and cleared stale prepared state after a failed request; layout remains in the approved system."
+        },
+        {
+          "stage": "final",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs http://127.0.0.1:8794/dashboard/mentions https://mention.highsignal.app/ --json",
+          "report": ".fleet/design-reviews/report-download/final-reviewed.json",
+          "findingsReview": "Reviewed actual paired scans and rendered captures. Existing source labels, functional config cards and public landing method remain intentional. Body dark-theme flag does not describe the scoped paper workspace. Added fallback link and cleared stale prepared state after a failed request; layout remains in the approved system."
+        }
+      ]
+    },
+    "visualReview": {
+      "status": "pass",
+      "reviewer": "Codex direct rendered review",
+      "direction": "existing-signal-room",
+      "report": ".fleet/design-reviews/report-download/review.md",
+      "checks": {
+        "hierarchy": {
+          "status": "pass",
+          "observation": "Existing results hierarchy retained; the outline report action sits above answers and explicitly exports the latest project check."
+        },
+        "typography": {
+          "status": "pass",
+          "observation": "Existing sans control and source metadata treatment retained; explanatory copy wraps at all required widths."
+        },
+        "composition": {
+          "status": "pass",
+          "observation": "No new panel or navigation. Download action, concise export scope and prepared/error feedback occupy one flexible row."
+        },
+        "identity": {
+          "status": "pass",
+          "observation": "Existing shared MentionPilot mark, warm paper, ruled cards and coral primary action remain coherent with the public landing."
+        },
+        "interaction": {
+          "status": "pass",
+          "observation": "Real product component with synthetic API generated a downloaded JSON file; parsed source/model/full answer. Injected report 503 displays failure, removes stale prepared state and recovers on retry. Async response cannot download after project page unmount; object URLs revoke on replacement/unmount. Browser automation download-event tracking timed out, so the actual session-created JSON artifact was inspected from Downloads."
+        },
+        "responsive": {
+          "status": "pass",
+          "observation": "Reviewed 390/768/1440 captures: action, fallback link, scope copy and source/model wrap without observed horizontal overflow."
+        }
+      }
+    },
+    "screenshots": [
+      {
+        "width": 390,
+        "path": ".fleet/design-reviews/report-download/after-390.jpg"
+      },
+      {
+        "width": 768,
+        "path": ".fleet/design-reviews/report-download/after-768.jpg"
+      },
+      {
+        "width": 1440,
+        "path": ".fleet/design-reviews/report-download/after-1440.jpg"
+      }
+    ],
+    "projectCheck": {
+      "status": "pass",
+      "command": "pnpm --filter @mentionpilot/web typecheck; pnpm --filter @mentionpilot/web build; git diff --check; browser synthetic success, failure and retry; parse actual downloaded fixture JSON"
+    },
+    "critique": {
+      "score": 35,
+      "maximum": 40,
+      "dimensions": {
+        "hierarchy": 7,
+        "typography": 7,
+        "composition": 6,
+        "identity": 7,
+        "interaction": 4,
+        "responsive": 4
+      }
+    },
+    "audit": {
+      "score": 18,
+      "maximum": 20,
+      "dimensions": {
+        "purpose": 4,
+        "accessibility": 5,
+        "behavior": 4,
+        "responsive": 3,
+        "performance": 2
+      }
+    },
+    "unresolved": {
+      "p0": 0,
+      "p1": 0
+    },
+    "detector": {
+      "posture": "advisory",
+      "findings": []
+    },
+    "comprehension": {
+      "status": "not-applicable",
+      "reviewer": "",
+      "answers": {
+        "product": "",
+        "audience": "",
+        "value": "",
+        "mechanism": "",
+        "proof": "",
+        "nextAction": ""
+      },
+      "purposeScore": {
+        "product": 0,
+        "audience": 0,
+        "value": 0,
+        "mechanism": 0,
+        "proof": 0,
+        "nextAction": 0,
+        "total": 0
+      },
+      "mismatches": []
+    },
+    "productContinuity": {
+      "status": "pass",
+      "reviewer": "Codex",
+      "report": ".fleet/design-reviews/report-download/review.md",
+      "surfaces": {
+        "landing": ".fleet/design-reviews/portfolio-23/landing-current.jpg",
+        "app": ".fleet/design-reviews/report-download/after-1440.jpg"
+      },
+      "checks": {
+        "designSystem": {
+          "status": "pass",
+          "observation": "Landing and app share paper, ink, coral actions, rules, serif findings and sans controls. Workspace adds denser case-file navigation for operation."
+        },
+        "identity": {
+          "status": "pass",
+          "observation": "Shared existing SVG mark and matched sans wordmark resolve the observed mismatch."
+        },
+        "vocabulary": {
+          "status": "pass",
+          "observation": "Brand, buyer questions, retained answers, citations and observed mention rate remain consistent across landing, free check and workspace."
+        },
+        "productTruth": {
+          "status": "pass",
+          "observation": "Managed free-ai is named separately from optional BYOK. Actual returned model is retained; neither surface claims direct consumer-assistant coverage. Alerts are explicitly unavailable; source failures remain unknown."
+        },
+        "handoff": {
+          "status": "pass",
+          "observation": "Actual deployed signed-in MentionPilot brand profile and five unbranded questions yielded five retained answers, model gemini-3.5-flash-lite, observed mention rate 0%. Existing public CTA and sign-in handoff were verified in the parent pass. New report download and source label verified locally against the real component; deployed report qualification is the release follow-up. Field cron remains unverified."
+        }
+      }
+    }
+  },
+  "ownerFeedback": {
+    "decision": "keep",
+    "note": "Preserve the owner-selected Signal Room direction from the portfolio pass; bounded report wiring and source metadata add no new visual system. No final owner acceptance claimed."
+  }
+}

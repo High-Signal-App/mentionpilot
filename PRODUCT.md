@@ -36,3 +36,5 @@ The primary audience is a product-aware founder or marketing lead who distrusts 
 ## Success
 
 A user can configure a brand, receive a relevant finding, inspect its evidence, take an action, and revisit the history. Product metrics should focus on useful-finding rate, actionable findings, resolution, repeat use, and source freshness; targets remain TBD until a real-use baseline exists.
+
+The AI Mentions results page downloads the latest project evidence report as JSON through the existing owner-authenticated report API. The export retains complete answers, source/model identity, citations, explicit errors and recent history; selecting an older check does not change the latest-report export.
