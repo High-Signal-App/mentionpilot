@@ -45,7 +45,7 @@ checks.post('/:projectId', async (c) => {
 
   c.executionCtx.waitUntil(
     runMentionCheck(result.db, config, promptList, checkId, result.project.id, c.env.FREE_AI)
-      .catch((err) => console.error('Mention check failed:', err))
+      .catch(() => console.error('Mention check did not finish successfully.'))
   );
 
   return c.json(check, 201);

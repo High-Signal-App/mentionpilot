@@ -180,8 +180,11 @@ export async function queryEndpoint(
     model?: string;
   };
 
-  const responseText =
-    (json.choices?.[0]?.message?.content || '').slice(0, 4000);
+  const content = json.choices?.[0]?.message?.content;
+  if (typeof content !== 'string' || !content.trim()) {
+    throw new Error('AI endpoint returned an empty response');
+  }
+  const responseText = content.slice(0, 4000);
 
   return {
     responseText,
@@ -417,6 +420,69 @@ interface DbHandle {
   updateCheck(id: string, updates: Record<string, unknown>): Promise<void>;
 }
 
+export interface MentionCheckOutcome {
+  status: 'completed' | 'partial' | 'failed';
+  attemptedQueries: number;
+  successfulQueries: number;
+  failedQueries: number;
+  checkId: string;
+}
+
+function safeProviderError(err: unknown): string {
+  const name = err instanceof Error ? err.name : '';
+  const message = err instanceof Error ? err.message : '';
+  if (name === 'TimeoutError' || name === 'AbortError') return 'Provider request timed out';
+  const status = message.match(/(?:endpoint|gateway).*?\((\d{3})\)/i)?.[1];
+  if (status) return `Provider returned an error (${status})`;
+  if (err instanceof SharedNeuronBudgetUnavailableError) return 'Managed AI service unavailable';
+  return 'Provider request failed';
+}
+
+export class MentionCheckPersistenceError extends Error {
+  constructor() {
+    super('Mention check evidence could not be persisted');
+    this.name = 'MentionCheckPersistenceError';
+  }
+}
+
+export class MentionCheckExecutionError extends Error {
+  constructor() {
+    super('Mention check could not be completed');
+    this.name = 'MentionCheckExecutionError';
+  }
+}
+
+async function persistResult(db: DbHandle, input: Record<string, unknown>): Promise<void> {
+  try {
+    await db.createResult(input);
+  } catch {
+    throw new MentionCheckPersistenceError();
+  }
+}
+
+async function persistCheckUpdate(db: DbHandle, checkId: string, updates: Record<string, unknown>): Promise<void> {
+  try {
+    await db.updateCheck(checkId, updates);
+  } catch {
+    throw new MentionCheckPersistenceError();
+  }
+}
+
+async function markCheckFailed(db: DbHandle, checkId: string, persistenceFailure: boolean): Promise<void> {
+  try {
+    await db.updateCheck(checkId, {
+      status: 'failed',
+      brand_mention_rate: null,
+      summary: persistenceFailure
+        ? 'Check did not finish because evidence persistence failed.'
+        : 'Check did not finish because saved configuration or response analysis could not be processed.',
+      completed_at: new Date().toISOString(),
+    });
+  } catch {
+    // Keep operational details out of logs and persisted summaries.
+  }
+}
+
 export async function runMentionCheck(
   db: DbHandle,
   config: ConfigRow,
@@ -424,40 +490,65 @@ export async function runMentionCheck(
   checkId: string,
   projectId: string,
   managedGateway?: AiGatewayBinding,
-): Promise<void> {
-  const brandAliases: string[] = JSON.parse(config.brand_aliases);
-  const competitors: { name: string }[] = JSON.parse(config.competitors);
-
-  const resolution = resolveMentionCheckSource(config, managedGateway);
-  if (!resolution.source) {
-    await db.updateCheck(checkId, {
-      status: 'failed',
-      summary: resolution.error,
-      completed_at: new Date().toISOString(),
-    });
-    return;
-  }
-
-  const endpointConfig = resolution.source === 'byok' ? {
-    endpointUrl: config.ai_endpoint_url!.trim(),
-    apiKey: config.ai_api_key!.trim(),
-    model: config.ai_model!.trim(),
-  } : null;
-  const platform: AIPlatform = resolution.source === 'byok'
-    ? detectAIPlatform(endpointConfig!.endpointUrl)
-    : 'free-ai';
-
-  let completedQueries = 0;
+): Promise<MentionCheckOutcome> {
+  let attemptedQueries = 0;
   let mentionCount = 0;
   let successfulQueries = 0;
   let failedQueries = 0;
 
   try {
+    const brandAliases: string[] = JSON.parse(config.brand_aliases);
+    const competitors: { name: string }[] = JSON.parse(config.competitors);
+    const resolution = resolveMentionCheckSource(config, managedGateway);
+    if (!resolution.source) {
+      await persistCheckUpdate(db, checkId, {
+        status: 'failed',
+        summary: 'Check skipped because its brand or AI source is not ready.',
+        completed_at: new Date().toISOString(),
+      });
+      return { status: 'failed', attemptedQueries, successfulQueries, failedQueries, checkId };
+    }
+
+    const endpointConfig = resolution.source === 'byok' ? {
+      endpointUrl: config.ai_endpoint_url!.trim(),
+      apiKey: config.ai_api_key!.trim(),
+      model: config.ai_model!.trim(),
+    } : null;
+    const platform: AIPlatform = resolution.source === 'byok'
+      ? detectAIPlatform(endpointConfig!.endpointUrl)
+      : 'free-ai';
+
     for (const prompt of prompts) {
+      attemptedQueries++;
+      let response: PlatformResponse | null = null;
       try {
-        const response = endpointConfig
+        response = endpointConfig
           ? await queryEndpoint(endpointConfig, prompt.prompt_text)
           : await queryManagedGateway(managedGateway, prompt.prompt_text, { projectId: 'mentionpilot' });
+      } catch (err) {
+        failedQueries++;
+        await persistResult(db, {
+          id: crypto.randomUUID(),
+          check_id: checkId,
+          project_id: projectId,
+          prompt_id: prompt.id,
+          prompt_text: prompt.prompt_text,
+          platform,
+          model: endpointConfig?.model ?? 'unknown',
+          provider_status: 'error',
+          error_message: safeProviderError(err),
+          response_text: '',
+          brand_mentioned: false,
+          brand_sentiment: null,
+          brand_position: null,
+          competitors_mentioned: '[]',
+          citations: '[]',
+          brand_cited: false,
+          latency_ms: null,
+        });
+      }
+
+      if (response) {
         const analysis = analyzeResponse(
           response.responseText,
           config.brand_name,
@@ -465,8 +556,7 @@ export async function runMentionCheck(
           config.brand_url,
           competitors
         );
-
-        await db.createResult({
+        await persistResult(db, {
           id: crypto.randomUUID(),
           check_id: checkId,
           project_id: projectId,
@@ -485,39 +575,17 @@ export async function runMentionCheck(
           brand_cited: analysis.brand_cited,
           latency_ms: response.latencyMs,
         });
-
         if (analysis.brand_mentioned) mentionCount++;
         successfulQueries++;
-      } catch (err) {
-        const errorMessage = (err as Error).message.slice(0, 500);
-        await db.createResult({
-          id: crypto.randomUUID(),
-          check_id: checkId,
-          project_id: projectId,
-          prompt_id: prompt.id,
-          prompt_text: prompt.prompt_text,
-          platform,
-          model: endpointConfig?.model ?? 'unknown',
-          provider_status: 'error',
-          error_message: errorMessage,
-          response_text: '',
-          brand_mentioned: false,
-          brand_sentiment: null,
-          brand_position: null,
-          competitors_mentioned: '[]',
-          citations: '[]',
-          brand_cited: false,
-          latency_ms: null,
-        });
-        failedQueries++;
       }
 
-      completedQueries++;
-      await db.updateCheck(checkId, { completed_queries: completedQueries });
+      await persistCheckUpdate(db, checkId, { completed_queries: attemptedQueries });
     }
 
     const mentionRate = successfulQueries > 0 ? mentionCount / successfulQueries : null;
-    await db.updateCheck(checkId, {
+    const status = successfulQueries === 0 ? 'failed' : failedQueries > 0 ? 'partial' : 'completed';
+    await persistCheckUpdate(db, checkId, {
+      // The existing persisted status only supports completed/failed; summary retains partial counts.
       status: successfulQueries > 0 ? 'completed' : 'failed',
       brand_mention_rate: mentionRate,
       summary: successfulQueries > 0
@@ -525,11 +593,10 @@ export async function runMentionCheck(
         : `Provider unavailable for all ${failedQueries} attempted queries.`,
       completed_at: new Date().toISOString(),
     });
+    return { status, attemptedQueries, successfulQueries, failedQueries, checkId };
   } catch (err) {
-    await db.updateCheck(checkId, {
-      status: 'failed',
-      summary: `Check failed: ${(err as Error).message}`,
-      completed_at: new Date().toISOString(),
-    });
+    const persistenceFailure = err instanceof MentionCheckPersistenceError;
+    await markCheckFailed(db, checkId, persistenceFailure);
+    throw persistenceFailure ? err : new MentionCheckExecutionError();
   }
 }
