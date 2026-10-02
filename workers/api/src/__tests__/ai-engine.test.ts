@@ -1,5 +1,5 @@
 import { afterEach, describe, it, expect, vi } from 'vitest';
-import { analyzeResponse, detectAIPlatform, queryEndpoint, queryManagedGateway, queryWorkersAi, SharedNeuronBudgetUnavailableError } from '../lib/ai-engine';
+import { analyzeResponse, detectAIPlatform, queryEndpoint, queryManagedGateway, queryWorkersAi, resolveMentionCheckSource, runMentionCheck, SharedNeuronBudgetUnavailableError } from '../lib/ai-engine';
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -179,12 +179,107 @@ describe('queryManagedGateway', () => {
       projectId: 'mentionpilot',
     });
 
-    expect(result.responseText).toHaveLength(4_000);
+    expect(result.responseText).toHaveLength(5_000);
     expect(fetch).toHaveBeenCalledTimes(1);
   });
 
   it('fails closed when the service binding is absent', async () => {
     await expect(queryManagedGateway(undefined, 'brand prompt')).rejects.toThrow('Managed AI gateway is unavailable');
+  });
+
+  it.each([undefined, '', 42, { id: 'not-a-model-name' }])('uses an explicit unknown model for missing or malformed gateway model %j', async (model) => {
+    const fetch = vi.fn().mockResolvedValue(Response.json({
+      model,
+      choices: [{ message: { content: 'Gateway answer' } }],
+    }));
+    const result = await queryManagedGateway({ fetch }, 'brand prompt');
+    expect(result.model).toBe('unknown');
+  });
+});
+
+describe('project mention-check source selection', () => {
+  const managedGateway = { fetch: vi.fn() };
+
+  it('uses managed AI only when the brand profile is named and all custom fields are absent', () => {
+    expect(resolveMentionCheckSource({
+      brand_name: 'Example', ai_endpoint_url: null, ai_api_key: null, ai_model: null,
+    }, managedGateway)).toEqual({ source: 'free-ai', error: null });
+  });
+
+  it.each(['', '   '])('does not run without a nonempty brand profile (%j)', (brand_name) => {
+    expect(resolveMentionCheckSource({
+      brand_name, ai_endpoint_url: null, ai_api_key: null, ai_model: null,
+    }, managedGateway)).toMatchObject({ source: null, error: 'Complete the brand profile before running AI checks.' });
+  });
+
+  it('does not switch a partial custom setup to managed AI', () => {
+    expect(resolveMentionCheckSource({
+      brand_name: 'Example', ai_endpoint_url: 'https://custom.example', ai_api_key: null, ai_model: null,
+    }, managedGateway)).toMatchObject({ source: null, error: expect.stringContaining('Custom AI setup is incomplete') });
+  });
+
+  it('reports missing managed binding when no custom source is configured', () => {
+    expect(resolveMentionCheckSource({
+      brand_name: 'Example', ai_endpoint_url: null, ai_api_key: null, ai_model: null,
+    }, undefined)).toEqual({ source: null, error: 'Managed AI is unavailable.' });
+  });
+});
+
+describe('runMentionCheck with managed AI', () => {
+  const config = {
+    ai_endpoint_url: null,
+    ai_api_key: null,
+    ai_model: null,
+    brand_name: 'Example Product',
+    brand_aliases: '["Example"]',
+    brand_url: 'example.test',
+    competitors: '[{"name":"Rival"}]',
+  };
+  const prompt = [{ id: 'prompt-1', prompt_text: 'Which tool should I use?' }];
+
+  it('stores response, observed model, citations and mention analysis in the ordinary results ledger', async () => {
+    const results: Record<string, unknown>[] = [];
+    const updates: Record<string, unknown>[] = [];
+    const db = {
+      createResult: vi.fn(async (result: Record<string, unknown>) => { results.push(result); return result; }),
+      updateCheck: vi.fn(async (_id: string, update: Record<string, unknown>) => { updates.push(update); }),
+    };
+    const fullAnswer = `Example Product is recommended. ${'evidence '.repeat(600)}https://example.test/docs https://guide.example/docs END-OF-ANSWER`;
+    expect(fullAnswer.length).toBeGreaterThan(4_000);
+    const managedFetch = vi.fn(async () => Response.json({
+      model: 'observed-model-v7',
+      choices: [{ message: { content: fullAnswer } }],
+    }));
+
+    await runMentionCheck(db, config, prompt, 'check-1', 'project-1', { fetch: managedFetch });
+
+    expect(managedFetch).toHaveBeenCalledOnce();
+    expect(results[0]).toMatchObject({
+      project_id: 'project-1', prompt_id: 'prompt-1', platform: 'free-ai', model: 'observed-model-v7',
+      provider_status: 'success', response_text: fullAnswer,
+      citations: '["https://example.test/docs","https://guide.example/docs"]', brand_mentioned: true,
+      brand_cited: true, error_message: null,
+    });
+    expect((results[0].response_text as string).endsWith('END-OF-ANSWER')).toBe(true);
+    expect(updates.at(-1)).toMatchObject({ status: 'completed', brand_mention_rate: 1 });
+  });
+
+  it('stores gateway failure as an attributed error with unknown model and no successful score', async () => {
+    const results: Record<string, unknown>[] = [];
+    const updates: Record<string, unknown>[] = [];
+    const db = {
+      createResult: vi.fn(async (result: Record<string, unknown>) => { results.push(result); return result; }),
+      updateCheck: vi.fn(async (_id: string, update: Record<string, unknown>) => { updates.push(update); }),
+    };
+    const managedFetch = vi.fn(async () => new Response('private upstream body omitted', { status: 503 }));
+
+    await runMentionCheck(db, config, prompt, 'check-2', 'project-1', { fetch: managedFetch });
+
+    expect(results[0]).toMatchObject({
+      project_id: 'project-1', platform: 'free-ai', model: 'unknown', provider_status: 'error',
+      error_message: 'Managed AI gateway error (503)', response_text: '', citations: '[]',
+    });
+    expect(updates.at(-1)).toMatchObject({ status: 'failed', brand_mention_rate: null });
   });
 });
 

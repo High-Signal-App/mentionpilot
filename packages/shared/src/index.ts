@@ -1,6 +1,6 @@
 // ─── Platforms ───────────────────────────────────────────────
 
-export type AIPlatform = 'openai' | 'anthropic' | 'google' | 'perplexity' | 'custom';
+export type AIPlatform = 'openai' | 'anthropic' | 'google' | 'perplexity' | 'custom' | 'free-ai';
 export type Sentiment = 'positive' | 'neutral' | 'negative';
 
 // ─── Records ────────────────────────────────────────────────

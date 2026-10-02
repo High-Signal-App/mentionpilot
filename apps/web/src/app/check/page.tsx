@@ -193,10 +193,10 @@ export default function FreeCheckPage() {
               <div className={styles.inputRow}>
                 <input
                   id="brand-domain"
-                  type="url"
+                  type="text"
                   inputMode="url"
                   autoComplete="url"
-                  placeholder="https://yourproduct.com"
+                  placeholder="yourproduct.com or https://yourproduct.com"
                   value={domain}
                   onChange={(event) => setDomain(event.target.value)}
                   disabled={loading || !clientReady}

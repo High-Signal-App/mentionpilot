@@ -20,6 +20,14 @@ export async function apiFetch<T>(
       Authorization: `Bearer ${token}`,
     },
   });
-  if (!res.ok) throw new Error(await res.text());
+  if (!res.ok) {
+    const text = await res.text();
+    let message = text;
+    try {
+      const body = JSON.parse(text) as { error?: unknown };
+      if (typeof body.error === "string") message = body.error;
+    } catch { /* Preserve a non-JSON server error. */ }
+    throw new Error(message || `Request failed (${res.status})`);
+  }
   return res.json() as Promise<T>;
 }

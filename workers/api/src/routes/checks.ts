@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { trace } from '@saas-maker/ops';
 import type { Bindings, Variables } from '../types';
 import { requireSession, verifyProjectOwnership } from '../middleware/auth';
-import { runMentionCheck } from '../lib/ai-engine';
+import { resolveMentionCheckSource, runMentionCheck } from '../lib/ai-engine';
 import type { ResultRecord } from '@mentionpilot/shared';
 
 const checks = new Hono<{ Bindings: Bindings; Variables: Variables }>();
@@ -26,8 +26,9 @@ checks.post('/:projectId', async (c) => {
   const config = await result.db.getBrandConfig(result.project.id);
   if (!config) return c.json({ error: 'Configure brand first' }, 400);
 
-  if (!config.ai_endpoint_url || !config.ai_api_key || !config.ai_model) {
-    return c.json({ error: 'Configure AI endpoint, API key, and model in settings' }, 400);
+  const source = resolveMentionCheckSource(config, c.env.FREE_AI);
+  if (!source.source) {
+    return c.json({ error: source.error }, 400);
   }
 
   const promptList = await result.db.listPrompts(result.project.id);
@@ -43,7 +44,7 @@ checks.post('/:projectId', async (c) => {
   });
 
   c.executionCtx.waitUntil(
-    runMentionCheck(result.db, config, promptList, checkId, result.project.id)
+    runMentionCheck(result.db, config, promptList, checkId, result.project.id, c.env.FREE_AI)
       .catch((err) => console.error('Mention check failed:', err))
   );
 

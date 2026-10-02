@@ -21,7 +21,7 @@ import { projects } from './routes/projects';
 import { badge } from './routes/badge';
 import { intelligence } from './routes/intelligence';
 import { getDb } from './db';
-import { runMentionCheck } from './lib/ai-engine';
+import { resolveMentionCheckSource, runMentionCheck } from './lib/ai-engine';
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -149,13 +149,19 @@ export default {
 async function runScheduledCheck(
   db: ReturnType<typeof getDb>,
   project: Record<string, any>,
-  _env: Bindings
+  env: Bindings
 ) {
   try {
     const promptList = await db.listPrompts(project.id);
     if (promptList.length === 0) return;
 
-    if (!project.ai_endpoint_url || !project.ai_api_key || !project.ai_model) return;
+    const source = resolveMentionCheckSource({
+      brand_name: project.brand_name,
+      ai_endpoint_url: project.ai_endpoint_url ?? null,
+      ai_api_key: project.ai_api_key ?? null,
+      ai_model: project.ai_model ?? null,
+    }, env.FREE_AI);
+    if (!source.source) return;
 
     const checkId = crypto.randomUUID();
     const totalQueries = promptList.length;
@@ -177,7 +183,7 @@ async function runScheduledCheck(
       competitors: project.competitors,
     };
 
-    await runMentionCheck(db, config, promptList, checkId, project.id);
+    await runMentionCheck(db, config, promptList, checkId, project.id, env.FREE_AI);
     await db.updateProjectLastCheck(project.id);
   } catch (err) {
     console.error(`Scheduled check failed for project ${project.id}:`, err);

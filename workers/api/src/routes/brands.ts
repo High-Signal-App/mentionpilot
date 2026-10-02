@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import type { Bindings, Variables } from '../types';
 import { requireSession, verifyProjectOwnership } from '../middleware/auth';
 import type { BrandConfigRecord, AIPlatform } from '@mentionpilot/shared';
+import { resolveMentionCheckSource } from '../lib/ai-engine';
 
 const brands = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 brands.use('*', requireSession);
@@ -128,16 +129,55 @@ brands.delete('/:projectId/config', async (c) => {
   return c.json({ ok: true });
 });
 
+// GET /:projectId/schedule — saved state and readiness, without credentials.
+brands.get('/:projectId/schedule', async (c) => {
+  const result = await verifyProjectOwnership(c, c.req.param('projectId'));
+  if (!result) return c.json({ error: 'Forbidden' }, 403);
+
+  const [config, promptList] = await Promise.all([
+    result.db.getBrandConfig(result.project.id),
+    result.db.listPrompts(result.project.id),
+  ]);
+  const source = resolveMentionCheckSource(config ?? {
+    brand_name: '', ai_endpoint_url: null, ai_api_key: null, ai_model: null,
+  }, c.env.FREE_AI);
+  return c.json({
+    schedule: result.project.check_schedule ?? null,
+    last_scheduled_check: result.project.last_scheduled_check ?? null,
+    source: source.source,
+    endpoint_configured: source.source !== null,
+    prompt_count: promptList.length,
+    badge_enabled: !!config?.badge_enabled,
+  });
+});
+
 // PATCH /:projectId/schedule — set or clear the check schedule
 brands.patch('/:projectId/schedule', async (c) => {
   const result = await verifyProjectOwnership(c, c.req.param('projectId'));
   if (!result) return c.json({ error: 'Forbidden' }, 403);
 
-  const body = await c.req.json();
-  const schedule = body.schedule ?? null;
+  const body: unknown = await c.req.json().catch(() => null);
+  if (!body || typeof body !== 'object' || Array.isArray(body) || !('schedule' in body)) {
+    return c.json({ error: 'Specify "daily", "weekly", or null to turn checks off.' }, 400);
+  }
+  const schedule = (body as Record<string, unknown>).schedule;
 
-  if (schedule !== null && !VALID_SCHEDULES.includes(schedule)) {
+  if (schedule !== null && (typeof schedule !== 'string' || !VALID_SCHEDULES.includes(schedule))) {
     return c.json({ error: 'Invalid schedule. Use "daily", "weekly", or null.' }, 400);
+  }
+
+  if (schedule !== null) {
+    const config = await result.db.getBrandConfig(result.project.id);
+    const source = resolveMentionCheckSource(config ?? {
+      brand_name: '', ai_endpoint_url: null, ai_api_key: null, ai_model: null,
+    }, c.env.FREE_AI);
+    if (!source.source) {
+      return c.json({ error: source.error }, 400);
+    }
+    const promptList = await result.db.listPrompts(result.project.id);
+    if (!promptList.length) {
+      return c.json({ error: 'Add at least one prompt before scheduling checks.' }, 400);
+    }
   }
 
   await result.db.updateProjectSchedule(result.project.id, schedule);
