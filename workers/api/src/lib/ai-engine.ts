@@ -17,6 +17,10 @@ export interface QueryEndpointOptions {
   projectId?: string;
 }
 
+export interface AiGatewayBinding {
+  fetch(request: Request): Promise<Response>;
+}
+
 export const DEFAULT_WORKERS_AI_MODEL = '@cf/meta/llama-3.1-8b-instruct-fp8-fast';
 const WORKERS_AI_DAILY_NEURON_CAP = 9_500;
 const DEFAULT_WORKERS_AI_OUTPUT_TOKENS = 512;
@@ -184,6 +188,42 @@ export async function queryEndpoint(
     model: json.model || config.model,
     latencyMs,
   };
+}
+
+export async function queryManagedGateway(
+  gateway: AiGatewayBinding | undefined,
+  prompt: string,
+  options: QueryEndpointOptions = {},
+): Promise<PlatformResponse> {
+  if (!gateway) throw new Error('Managed AI gateway is unavailable');
+  const start = Date.now();
+  const response = await gateway.fetch(new Request('https://fleet-gateway.internal/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer gateway-managed',
+      'x-gateway-project-id': 'mentionpilot',
+    },
+    body: JSON.stringify({
+      model: 'auto',
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: options.maxTokens ?? 1024,
+      stream: false,
+      ...(options.json ? { response_format: { type: 'json_object' } } : {}),
+      ...(options.projectId ? { project_id: options.projectId } : {}),
+    }),
+    signal: AbortSignal.timeout(30_000),
+  }));
+  if (!response.ok) throw new Error(`Managed AI gateway error (${response.status})`);
+  const json = await response.json() as {
+    choices?: Array<{ message?: { content?: unknown } }>;
+    model?: string;
+  };
+  const responseText = typeof json.choices?.[0]?.message?.content === 'string'
+    ? json.choices[0].message.content.slice(0, 4000)
+    : '';
+  if (!responseText) throw new Error('Managed AI gateway returned an empty response');
+  return { responseText, model: json.model || 'auto', latencyMs: Date.now() - start };
 }
 
 export async function queryWorkersAi(

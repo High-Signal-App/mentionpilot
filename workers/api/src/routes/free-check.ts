@@ -2,8 +2,7 @@ import { Hono } from 'hono';
 import type { Bindings, Variables } from '../types';
 import { getDb } from '../db';
 import { crawlSite, generatePrompts } from '../lib/site-crawler';
-import { queryEndpoint, queryWorkersAi, analyzeResponse } from '../lib/ai-engine';
-import type { AiEndpointConfig } from '../lib/ai-engine';
+import { queryManagedGateway, analyzeResponse } from '../lib/ai-engine';
 import {
   buildSiteIntelligencePrompt,
   calculateReliableMentionRate,
@@ -28,15 +27,6 @@ freeCheck.post('/', async (c) => {
     return c.json({ error: 'Rate limit exceeded. Try again in an hour.' }, 429);
   }
 
-  // Build endpoint config from env vars
-  const endpointUrl = c.env.FREE_AI_ENDPOINT_URL;
-  const apiKey = c.env.FREE_AI_API_KEY;
-  const model = c.env.FREE_AI_MODEL;
-
-  const endpointConfig: AiEndpointConfig | null = endpointUrl && apiKey && model
-    ? { endpointUrl, apiKey, model }
-    : null;
-
   // Crawl site
   let siteInfo;
   try {
@@ -48,13 +38,11 @@ freeCheck.post('/', async (c) => {
   let intelligence = parseSiteIntelligence('', siteInfo);
   try {
     const prompt = buildSiteIntelligencePrompt(siteInfo);
-    const response = endpointConfig
-      ? await queryEndpoint(endpointConfig, prompt, {
+    const response = await queryManagedGateway(c.env.FREE_AI, prompt, {
         json: true,
         maxTokens: 800,
         projectId: 'mentionpilot',
-      })
-      : await queryWorkersAi(c.env.AI, prompt, c.env.NEURON_BUDGET);
+      });
     intelligence = parseSiteIntelligence(response.responseText, siteInfo);
   } catch (error) {
     // Deterministic, unbranded prompts remain available when interpretation fails.
@@ -89,9 +77,7 @@ freeCheck.post('/', async (c) => {
   try {
     const settledResults = await Promise.all(prompts.map(async (promptText) => {
       try {
-        const response = endpointConfig
-          ? await queryEndpoint(endpointConfig, promptText, { projectId: 'mentionpilot' })
-          : await queryWorkersAi(c.env.AI, promptText, c.env.NEURON_BUDGET);
+        const response = await queryManagedGateway(c.env.FREE_AI, promptText, { projectId: 'mentionpilot' });
         const analysis = analyzeResponse(
           response.responseText,
           siteInfo.brand_name,
@@ -102,7 +88,7 @@ freeCheck.post('/', async (c) => {
 
         return {
           prompt: promptText,
-          platform: endpointConfig ? 'free-ai' : 'workers-ai',
+          platform: 'free-ai',
           model: response.model,
           brand_mentioned: analysis.brand_mentioned,
           brand_sentiment: analysis.brand_sentiment,

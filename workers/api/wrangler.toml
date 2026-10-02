@@ -11,23 +11,10 @@ cpu_ms = 30000
 
 [vars]
 ENVIRONMENT = "production"
-# Free check — Fleet's OpenAI-compatible free-AI gateway. The API key is a
-# Wrangler secret sourced from Infisical and is never stored in this file.
-FREE_AI_ENDPOINT_URL = "https://ai-gateway.sassmaker.com/v1/chat/completions"
-FREE_AI_MODEL = "auto"
-# FREE_AI_API_KEY = ""
-# Legacy free check keys (deprecated — use FREE_AI_* instead)
-# OPENAI_API_KEY = ""
-# GOOGLE_API_KEY = ""
-
-[ai]
-binding = "AI"
-
-# Shared app-local admission for each direct Workers AI call; the gateway enforces the 9,500/day cap.
-[[durable_objects.bindings]]
-name = "NEURON_BUDGET"
-class_name = "NeuronBudgetDO"
-script_name = "free-ai-gateway"
+[[services]]
+binding = "FREE_AI"
+service = "free-ai-gateway"
+entrypoint = "FleetGateway"
 
 [triggers]
 crons = ["0 6 * * *"]
