@@ -1,6 +1,7 @@
 export interface Bindings {
   DB: D1Database;
   AI: Ai;
+  NEURON_BUDGET?: import('./lib/ai-engine').NeuronBudgetNamespace;
   ENVIRONMENT: string;
   OPENAI_API_KEY?: string;
   GOOGLE_API_KEY?: string;
