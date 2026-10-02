@@ -22,5 +22,5 @@ jobs:
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: 7d048325699a5acddb44d3be31cf6ba9
-          command: deploy
+          command: deploy --tag ${{ github.sha }}
           workingDirectory: apps/web
