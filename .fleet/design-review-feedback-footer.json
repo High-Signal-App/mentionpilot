@@ -63,7 +63,7 @@
       }
     ],
     "projectCheck": {
-      "command": "Production webpack build and typecheck; initial9browserregressions passed(exit0); final10assertionspassed with teardown stopped(exit130); full12state/widthaccepted; final3widthfooter static44px,visiblefocus,Enter/Escape and nooverlap/overflow/errors; independentA39/40 B18/20",
+      "command": "Production webpackbuild/typecheck;11publiccheckbrowserregressionspass(exit0), including delayed-JavaScript domain readiness;12runtime state/widthcasespass(exit0); finalfooter static44px,actualkeyboardfocus,Enter/Escape,nooverlap/overflow/errorsat390/768/1440; independentcritique39/40 audit18/20",
       "status": "pass"
     },
     "critique": {
