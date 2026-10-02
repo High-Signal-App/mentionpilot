@@ -1,19 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Loader2, TrendingUp, Award, Sparkles, Search, MessageSquare, Layers, FileCode, Send } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { apiFetch } from "@/lib/api-client";
 import { useProject } from "@/lib/use-project";
-
-interface VisibilityScore {
-  score: number;
-  grade: string;
-  breakdown: { mention: number; sentiment: number; position: number; citation: number; reach: number };
-  max: { mention: number; sentiment: number; position: number; citation: number; reach: number };
-}
+import { getVisibilityEvidence, type VisibilityScore, type VisibilityCheck } from "@/lib/visibility-evidence";
 
 interface SuggestedPrompt {
   text: string;
@@ -33,31 +27,65 @@ export default function DashboardPage() {
   const { projectId, loading: projectLoading } = useProject();
   const [loading, setLoading] = useState(true);
   const [score, setScore] = useState<VisibilityScore | null>(null);
+  const [check, setCheck] = useState<VisibilityCheck | null>(null);
   const [suggestions, setSuggestions] = useState<SuggestedPrompt[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const requestGeneration = useRef(0);
+  const [dataProjectId, setDataProjectId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    if (!projectId) return;
+    const generation = ++requestGeneration.current;
+    if (!projectId) {
+      setLoading(false);
+      setScore(null);
+      setCheck(null);
+      setSuggestions([]);
+      setError(null);
+      setDataProjectId(null);
+      return;
+    }
     try {
-      const [s, p] = await Promise.allSettled([
+      setLoading(true);
+      setScore(null);
+      setCheck(null);
+      setSuggestions([]);
+      setError(null);
+      const [s, p, evidence] = await Promise.allSettled([
         apiFetch<VisibilityScore>(`/v1/analytics/${projectId}/visibility-score`),
         apiFetch<{ suggestions: SuggestedPrompt[] }>(`/v1/analytics/${projectId}/discover-prompts`),
+        apiFetch<{ id: string }[]>(`/v1/checks/${projectId}`).then((checks) =>
+          checks[0] ? apiFetch<VisibilityCheck>(`/v1/checks/${projectId}/${checks[0].id}`) : null
+        ),
       ]);
+      if (generation !== requestGeneration.current) return;
       if (s.status === 'fulfilled') setScore(s.value);
       if (p.status === 'fulfilled') setSuggestions(p.value.suggestions);
-    } catch (err) { setError((err as Error).message); }
-    finally { setLoading(false); }
+      if (evidence.status === 'fulfilled') setCheck(evidence.value);
+      if (s.status === 'rejected' || evidence.status === 'rejected') {
+        setError('Visibility evidence is unavailable. Try again later.');
+      }
+    } catch (err) {
+      if (generation === requestGeneration.current) setError((err as Error).message);
+    }
+    finally {
+      if (generation === requestGeneration.current) {
+        setLoading(false);
+        setDataProjectId(projectId);
+      }
+    }
   }, [projectId]);
 
   useEffect(() => { load(); }, [load]);
 
-  if (projectLoading || loading) return (
+  if (projectLoading || loading || dataProjectId !== projectId) return (
     <div className="flex items-center justify-center py-24">
       <Loader2 className="h-8 w-8 animate-spin text-primary" />
     </div>
   );
 
-  const gradeColor = score?.grade === 'A' ? 'text-green-500' : score?.grade === 'B' ? 'text-primary' : score?.grade === 'C' ? 'text-accent' : 'text-destructive';
+  const evidence = getVisibilityEvidence(score, check);
+  const measured = evidence.status !== "unknown";
+  const gradeColor = !measured ? "text-muted-foreground" : score?.grade === 'A' ? 'text-green-500' : score?.grade === 'B' ? 'text-primary' : score?.grade === 'C' ? 'text-accent' : 'text-destructive';
 
   return (
     <div className="flex flex-col gap-10">
@@ -73,28 +101,28 @@ export default function DashboardPage() {
       )}
 
       {/* Visibility Score */}
-      {score && (
-        <Card className="border-border/40 bg-card/50 backdrop-blur shadow-2xl shadow-primary/5 overflow-hidden group">
+      <Card className="border-border/40 bg-card/50 backdrop-blur shadow-2xl shadow-primary/5 overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
           <CardContent className="pt-10 pb-10 relative">
             <div className="flex flex-col md:flex-row items-center gap-12">
               <div className="text-center md:border-r border-border/40 md:pr-12">
-                <div className={`text-8xl font-black leading-none ${gradeColor} drop-shadow-sm`}>{score.score}</div>
+                <div className={`${measured ? "text-8xl" : "text-2xl"} font-black leading-none ${gradeColor} drop-shadow-sm`}>{measured ? score!.score : "Not measured"}</div>
                 <p className="text-xs font-black uppercase tracking-widest text-muted-foreground mt-4">Visibility Score</p>
-                <Badge variant="outline" className={`mt-4 border-current font-black ${gradeColor} bg-current/5 px-4 py-1`}>Grade: {score.grade}</Badge>
+                <Badge variant="outline" className={`mt-4 border-current font-black ${gradeColor} bg-current/5 px-4 py-1`}>{evidence.status === "complete" ? `Grade: ${score!.grade}` : evidence.status === "partial" ? "Partial evidence" : "Unknown"}</Badge>
               </div>
               <div className="flex-1 w-full space-y-5">
-                {Object.entries(score.breakdown).map(([key, value]) => {
+                <p className="text-xs text-muted-foreground">{evidence.message}</p>
+                {Object.entries(score?.breakdown ?? { mention: 0, sentiment: 0, position: 0, citation: 0, reach: 0 }).map(([key, value]) => {
                   const metric = key as keyof VisibilityScore["max"];
-                  const maximum = score.max?.[metric] ?? VISIBILITY_MAX[metric];
+                  const maximum = score?.max?.[metric] ?? VISIBILITY_MAX[metric];
                   return (
                     <div key={key} className="space-y-1.5">
                       <div className="flex justify-between items-end">
                         <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{key}</span>
-                        <span className="text-xs font-bold">{value}/{maximum}</span>
+                        <span className="text-xs font-bold">{measured ? `${value}/${maximum}` : "Not measured"}</span>
                       </div>
                       <div className="h-2.5 bg-muted/50 rounded-full overflow-hidden border border-border/10">
-                        <div className="h-full bg-primary rounded-full shadow-[0_0_10px_rgba(var(--primary),0.3)]" style={{ width: `${(value / maximum) * 100}%` }} />
+                        <div className="h-full bg-primary rounded-full shadow-[0_0_10px_rgba(var(--primary),0.3)]" style={{ width: `${measured ? (value / maximum) * 100 : 0}%` }} />
                       </div>
                     </div>
                   );
@@ -102,8 +130,7 @@ export default function DashboardPage() {
               </div>
             </div>
           </CardContent>
-        </Card>
-      )}
+      </Card>
 
       {/* Quick Actions */}
       <div className="grid gap-6 sm:grid-cols-3">
