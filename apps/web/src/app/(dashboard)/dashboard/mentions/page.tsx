@@ -699,7 +699,7 @@ export default function MentionsPage() {
       {latestResults.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center justify-between">
+            <CardTitle className="flex flex-wrap gap-2 items-center justify-between">
               <span>Results</span>
               {displayedCheck?.brand_mention_rate !== null &&
                 displayedCheck?.brand_mention_rate !== undefined && (
@@ -710,13 +710,13 @@ export default function MentionsPage() {
                         : "secondary"
                     }
                   >
-                    {Math.round(displayedCheck.brand_mention_rate * 100)}% mention
-                    rate
+                    {Math.round(displayedCheck.brand_mention_rate * 100)}% of successful responses
                   </Badge>
                 )}
             </CardTitle>
           </CardHeader>
           <CardContent>
+            <p className="mb-4 text-sm text-muted-foreground">{latestResults.filter((result) => result.provider_status === "success").length}/{displayedCheck?.total_queries ?? latestResults.length} successful responses. {latestResults.filter((result) => result.provider_status === "error").length} provider requests unavailable. Unavailable responses do not count as negative mentions.</p>
             <div className="space-y-2">
               {latestResults.map((result) => {
                 const isExpanded = expandedResult === result.id;
@@ -729,7 +729,9 @@ export default function MentionsPage() {
                       }
                     >
                       <div className="flex items-center gap-3 flex-1 min-w-0">
-                        {result.brand_mentioned ? (
+                        {result.provider_status === "error" ? (
+                          <span className="text-muted-foreground text-xs shrink-0">Unavailable</span>
+                        ) : result.brand_mentioned ? (
                           <Check className="h-4 w-4 text-green-500 shrink-0" />
                         ) : (
                           <X className="h-4 w-4 text-red-500 shrink-0" />
@@ -843,10 +845,10 @@ export default function MentionsPage() {
               {checks.map((check) => (
                 <button
                   key={check.id}
-                  className="flex w-full items-center justify-between rounded-md border px-4 py-3 text-sm hover:bg-muted/50 transition-colors text-left"
+                  className="flex flex-wrap gap-3 w-full items-center justify-between rounded-md border px-4 py-3 text-sm hover:bg-muted/50 transition-colors text-left"
                   onClick={() => viewCheck(check.id)}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-3">
                     <Badge
                       variant={
                         check.status === "completed"
@@ -869,7 +871,7 @@ export default function MentionsPage() {
                       </span>
                     )}
                     <span className="text-muted-foreground">
-                      {check.completed_queries}/{check.total_queries}
+                      {check.completed_queries}/{check.total_queries} attempts
                     </span>
                   </div>
                 </button>
