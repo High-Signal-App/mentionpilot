@@ -1,0 +1,93 @@
+{
+  "example_type": "Synthetic test data only; no live AI observations or customer results.",
+  "report": {
+    "generated_at": "2026-10-02T12:00:00.000Z",
+    "project": {
+      "id": "synthetic-project",
+      "user_id": "synthetic-owner",
+      "name": "Example Product",
+      "slug": "example-product",
+      "created_at": "2026-10-01 08:00:00",
+      "updated_at": "2026-10-01 08:00:00"
+    },
+    "brand": {
+      "name": "Example Product",
+      "url": "https://example.test"
+    },
+    "summary": {
+      "mention_rate": 1,
+      "total_checks": 1,
+      "total_prompts": 2
+    },
+    "latest_check": {
+      "id": "synthetic-check",
+      "project_id": "synthetic-project",
+      "status": "completed",
+      "total_queries": 2,
+      "completed_queries": 2,
+      "brand_mention_rate": 1,
+      "summary": "One available response; one provider error.",
+      "created_at": "2026-10-01 09:00:00",
+      "completed_at": "2026-10-01 09:00:03",
+      "results": [
+        {
+          "id": "synthetic-result",
+          "check_id": "synthetic-check",
+          "prompt_id": "synthetic-prompt",
+          "prompt": "Which product supports this use case?",
+          "platform": "custom",
+          "model": "synthetic-model-not-a-live-provider",
+          "provider_status": "success",
+          "error_message": null,
+          "response_text": "Synthetic response for export testing. Synthetic response for export testing. Synthetic response for export testing. Synthetic response for export testing. Synthetic response for export testing. Synthetic response for export testing. Synthetic response for export testing. Synthetic response for export testing. Synthetic response for export testing. Synthetic response for export testing. Synthetic response for export testing. Synthetic response for export testing. Synthetic response for export testing. Synthetic response for export testing. Synthetic response for export testing. Synthetic response for export testing. Synthetic response for export testing. Synthetic response for export testing. Synthetic response for export testing. Synthetic response for export testing. Synthetic response for export testing. Synthetic response for export testing. Synthetic response for export testing. Synthetic response for export testing. Synthetic response for export testing. Synthetic response for export testing. Synthetic response for export testing. Synthetic response for export testing. Synthetic response for export testing. Synthetic response for export testing. \nhttps://example.test/product\nhttps://example.test/docs",
+          "created_at": "2026-10-01 09:00:01",
+          "citations": [
+            "https://example.test/product",
+            "https://example.test/docs"
+          ],
+          "competitors_mentioned": [
+            {
+              "name": "Example Alternative",
+              "mentioned": true,
+              "position": 2
+            }
+          ],
+          "brand_mentioned": true,
+          "brand_sentiment": "neutral",
+          "brand_position": 1,
+          "brand_cited": true,
+          "latency_ms": 1200,
+          "evidence_warnings": []
+        },
+        {
+          "id": "synthetic-error",
+          "check_id": "synthetic-check",
+          "prompt_id": "synthetic-prompt-2",
+          "prompt": "Compare this product with an alternative.",
+          "platform": "custom",
+          "model": "synthetic-model-not-a-live-provider",
+          "provider_status": "error",
+          "error_message": "Synthetic provider timeout",
+          "response_text": "",
+          "created_at": "2026-10-01 09:00:02",
+          "citations": [],
+          "competitors_mentioned": [],
+          "brand_mentioned": false,
+          "brand_sentiment": null,
+          "brand_position": null,
+          "brand_cited": false,
+          "latency_ms": null,
+          "evidence_warnings": []
+        }
+      ]
+    },
+    "check_history": [
+      {
+        "id": "synthetic-check",
+        "status": "completed",
+        "brand_mention_rate": 1,
+        "created_at": "2026-10-01 09:00:00"
+      }
+    ]
+  }
+}
