@@ -28,6 +28,8 @@ jobs:
           bun-version: 1.3.14
       - run: pnpm install --frozen-lockfile --ignore-scripts
       - run: pnpm lint
-      - run: pnpm test
+      - name: Test API
+        working-directory: workers/api
+        run: pnpm test
       - run: pnpm build
       - run: pnpm typecheck
