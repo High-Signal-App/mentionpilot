@@ -241,6 +241,7 @@ analytics.get('/:projectId/visibility-score', async (c) => {
   ).bind(result.project.id).first();
 
   if (!latestCheck) return c.json({
+    checkId: null,
     score: 0,
     breakdown: { mention: 0, sentiment: 0, position: 0, citation: 0, reach: 0 },
     max: { mention: 30, sentiment: 20, position: 20, citation: 15, reach: 15 },
@@ -253,6 +254,7 @@ analytics.get('/:projectId/visibility-score', async (c) => {
 
   const total = checkResults.length;
   if (total === 0) return c.json({
+    checkId: latestCheck.id,
     score: 0,
     breakdown: { mention: 0, sentiment: 0, position: 0, citation: 0, reach: 0 },
     max: { mention: 30, sentiment: 20, position: 20, citation: 15, reach: 15 },
@@ -296,6 +298,7 @@ analytics.get('/:projectId/visibility-score', async (c) => {
   else if (score >= 35) grade = 'D';
 
   return c.json({
+    checkId: latestCheck.id,
     score,
     grade,
     breakdown: {
