@@ -1,0 +1,116 @@
+{
+  "$schema": "fleet.design-review.v1",
+  "version": 1,
+  "project": "mentionpilot",
+  "target": "Public check loading, recovery, score and selected support footer, issues #8\u201310 and #16",
+  "surfaceMode": "operate",
+  "mode": "overhaul",
+  "register": "product",
+  "context": {
+    "product": "PRODUCT.md",
+    "design": "DESIGN.md"
+  },
+  "direction": {
+    "references": [
+      "Owner-selected Fleet shared Feedback A footer support; MentionPilot Signal Room and installed upstream feedback dialog"
+    ],
+    "probes": [
+      {
+        "id": "a",
+        "path": ".fleet/design/feedback-a-reference.html"
+      }
+    ],
+    "selected": "a",
+    "approval": "approved",
+    "library": {
+      "strategy": "upstream-first",
+      "primary": "existing-project-system",
+      "sources": [],
+      "runtime": "existing",
+      "customReplacement": {
+        "used": false,
+        "authorization": "not-required",
+        "reason": ""
+      }
+    },
+    "contract": {
+      "purpose": "Keep Fleet feedback reachable without obscuring product actions, titles, or newsletter controls.",
+      "purposeSource": "MentionPilot #16 and SaaS Maker #163; owner selected direction A on 2026-10-02",
+      "canonicalPurpose": "One shared in-flow footer support section opens the existing feedback dialog while preserving each product's own page and newsletter experience.",
+      "purposeAlignment": "match",
+      "driftNote": "",
+      "audience": "Visitors using products that include the shared footer integration or React package",
+      "job": "Send a question, bug report, or product idea without losing their place or covering page controls.",
+      "thesis": "Feedback belongs beside footer support and newsletter actions in normal page flow.",
+      "system": "MentionPilot Signal Room paper, ink and signal-red tokens for public pages; incumbent workspace variables on dashboard routes; installed @saas-maker/feedback dialog retained with a scoped static trigger and explicit keyboard focus.",
+      "signature": "A ruled paper support section with a signal-red action after the check or page content.",
+      "risk": "The action is less immediately discoverable than a persistent floating button."
+    }
+  },
+  "evidence": {
+    "screenshots": [
+      {
+        "width": 390,
+        "path": ".fleet/evidence/feedback-footer/after-390.png"
+      },
+      {
+        "width": 768,
+        "path": ".fleet/evidence/feedback-footer/after-768.png"
+      },
+      {
+        "width": 1440,
+        "path": ".fleet/evidence/feedback-footer/after-1440.png"
+      }
+    ],
+    "projectCheck": {
+      "command": "Production webpack build and typecheck; initial9browserregressions passed(exit0); final10assertionspassed with teardown stopped(exit130); full12state/widthaccepted; final3widthfooter static44px,visiblefocus,Enter/Escape and nooverlap/overflow/errors; independentA39/40 B18/20",
+      "status": "pass"
+    },
+    "critique": {
+      "score": 39,
+      "maximum": 40
+    },
+    "audit": {
+      "score": 18,
+      "maximum": 20
+    },
+    "unresolved": {
+      "p0": 0,
+      "p1": 0
+    },
+    "detector": {
+      "posture": "advisory",
+      "findings": [
+        "Mechanical source detector[]; independent read-only footer browser checks passed",
+        "Pinned advisory rendered scan18 at1280x800; incumbentGeist font is selected Signal Room, no before/afterclaim",
+        "Authenticated dashboard theme and real feedback submission remain unexercised"
+      ]
+    },
+    "comprehension": {
+      "status": "not-applicable",
+      "reviewer": "",
+      "answers": {
+        "product": "",
+        "audience": "",
+        "value": "",
+        "mechanism": "",
+        "proof": "",
+        "nextAction": ""
+      },
+      "purposeScore": {
+        "product": 0,
+        "audience": 0,
+        "value": 0,
+        "mechanism": 0,
+        "proof": 0,
+        "nextAction": 0,
+        "total": 0
+      },
+      "mismatches": []
+    }
+  },
+  "ownerFeedback": {
+    "decision": "keep",
+    "note": "Owner selected shared A footer support on 2026-10-02; consumer adapter keeps the existing upstream dialog and product visual system. No package publication or provider call."
+  }
+}

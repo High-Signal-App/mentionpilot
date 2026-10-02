@@ -28,6 +28,15 @@ interface FreeCheckResponse {
   error?: string;
 }
 
+function isEvidence(value: unknown): value is FreeCheckResult {
+  if (!value || typeof value !== "object") return false;
+  const result = value as Record<string, unknown>;
+  return ["prompt", "platform", "model", "response_preview"].every((key) => typeof result[key] === "string")
+    && typeof result.brand_mentioned === "boolean"
+    && typeof result.brand_cited === "boolean"
+    && (result.brand_position === null || (typeof result.brand_position === "number" && Number.isFinite(result.brand_position)));
+}
+
 function Mark() {
   return (
     <svg viewBox="0 0 36 36" role="img" aria-label="MentionPilot mark">
@@ -91,11 +100,11 @@ export default function FreeCheckPage() {
         }
         if (data.status === "running") continue;
         if (data.status === "failed") {
-          setResults(Array.isArray(data.results) ? data.results : []);
+          setResults(Array.isArray(data.results) ? data.results.filter(isEvidence) : []);
           setError(typeof data.error === "string" ? data.error : "The check did not return enough evidence for a reliable score.");
         } else {
           const rate = data.mention_rate;
-          if (!Array.isArray(data.results) || data.results.length === 0 || !(rate === null || (typeof rate === "number" && Number.isFinite(rate) && rate >= 0 && rate <= 1))) {
+          if (!Array.isArray(data.results) || data.results.length === 0 || !data.results.every(isEvidence) || !(rate === null || (typeof rate === "number" && Number.isFinite(rate) && rate >= 0 && rate <= 1))) {
             throw new Error("The check service returned incomplete evidence. You can retry.");
           }
           setResults(data.results);

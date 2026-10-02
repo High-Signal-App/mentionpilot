@@ -20,13 +20,13 @@ test('page exposes the public no-signup check', async ({ page }) => {
   await expect(page.getByText('No signup', { exact: true })).toBeVisible();
 });
 
-for (const problem of ['503', 'unknown', 'incomplete', 'empty-scored']) {
+for (const problem of ['503', 'unknown', 'incomplete', 'empty-scored', 'malformed-record']) {
   test(`poll ${problem} is an explicit error and permits retry`, async ({ page }) => {
     let recovered = false;
     await page.route('**/v1/free-check**', route => {
       if (route.request().method() === 'POST') return route.fulfill({ json: { id: 'fixture', brand_name: 'Fixture' } });
       if (recovered) return route.fulfill({ json: { status: 'completed', results: [evidence], mention_rate: 1 } });
-      return problem === '503' ? route.fulfill({ status: 503, json: {} }) : route.fulfill({ json: problem === 'unknown' ? {} : { status: 'completed', results: [], ...(problem === 'empty-scored' ? { mention_rate: 1 } : {}) } });
+      return problem === '503' ? route.fulfill({ status: 503, json: {} }) : route.fulfill({ json: problem === 'unknown' ? {} : { status: 'completed', results: problem === 'malformed-record' ? [null] : [], ...(['empty-scored', 'malformed-record'].includes(problem) ? { mention_rate: 1 } : {}) } });
     });
     await page.goto('/check'); await submit(page);
     await expect(page.getByRole('button', { name: 'Run check', exact: true })).toBeEnabled();
