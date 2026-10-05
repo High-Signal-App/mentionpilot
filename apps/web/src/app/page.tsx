@@ -304,29 +304,50 @@ export default function Home() {
         </section>
       </main>
 
-      <footer className={styles.footer}>
-        <Link href="/" className={styles.footerBrand}>MentionPilot</Link>
-        <p>Evidence-first brand intelligence for AI assistants.</p>
-        <div>
-          <Link href="/blog">Research</Link>
-          <Link href="/check" data-app-health-event="free_check.opened">Free check</Link>
-          <Link href="/login" data-app-health-event="workspace.sign_in.opened">Sign in</Link>
-        </div>
-        <p className={styles.footerPrivacy}>
-          App Health measures public page views and named actions using first-party anonymous browser IDs for up to 90 days. See the <a href="https://sassmaker.com/privacy">privacy policy</a>.
-        </p>
-        <saas-maker-newsletter-capture
+      <footer className={styles.footer} aria-label="MentionPilot footer">
+        <fleet-footer-extension
+          className={styles.footerExtension}
+          data-fleet-footer-project="mentionpilot"
           product-name="MentionPilot"
-          catalog-id="mentionpilot"
-          kind="newsletter"
-          source="footer"
-          privacy-url="https://sassmaker.com/privacy"
           theme="dark"
-        ></saas-maker-newsletter-capture>
+          surface="web"
+          signature-font="inherit"
+          font-base="/fonts/fleet-footer-precise-v1/"
+          art-src="/footer-art/mentionpilot-precise-v1.webp"
+          art-alt="An editorial research desk with two evidence trays, source sheets, and a central notebook marked with coral annotations."
+          art-width="2172"
+          art-height="724"
+          art-position="50% 58%"
+          art-credit="Original illustration for MentionPilot"
+        >
+          <Link slot="cta" data-fleet-footer-cta href="/check" data-app-health-event="free_check.opened">Free check</Link>
+          <div slot="navigation" data-fleet-footer-navigation className={styles.footerNavigation}>
+            <nav className={styles.footerLinks} aria-label="Footer navigation">
+              <Link href="/" className={styles.footerBrand}>MentionPilot</Link>
+              <Link href="/blog">Research</Link>
+              <Link href="/login" data-app-health-event="workspace.sign_in.opened">Sign in</Link>
+            </nav>
+            <p className={styles.footerTagline}>Evidence-first brand intelligence for AI assistants.</p>
+            <p className={styles.footerPrivacy}>
+              App Health measures public page views and named actions using first-party anonymous browser IDs for up to 90 days. See the <a href="https://sassmaker.com/privacy">privacy policy</a>.
+            </p>
+          </div>
+          <saas-maker-newsletter-capture
+            slot="capture"
+            product-name="MentionPilot"
+            catalog-id="mentionpilot"
+            kind="newsletter"
+            source="footer"
+            privacy-url="https://sassmaker.com/privacy"
+            theme="dark"
+            layout="compact"
+            integrated=""
+          ></saas-maker-newsletter-capture>
+        </fleet-footer-extension>
       </footer>
-      <script src="https://sassmaker.com/project-strip.js" data-project="mentionpilot" defer />
-      <script src="https://sassmaker.com/ai-chat-footer.js" data-name="MentionPilot" defer />
-      <script type="module" src="https://sassmaker.com/newsletter-capture.js" />
+      <script src="https://sassmaker.com/project-strip.js?v=precise-b0adaa67" data-project="mentionpilot" data-theme="dark" data-host-only="true" defer />
+      <script src="https://sassmaker.com/ai-chat-footer.js?v=precise-b0adaa67" data-project="mentionpilot" data-name="MentionPilot" data-theme="dark" data-surface="web" data-host-only="true" data-capture="false" defer />
+      <script type="module" src="https://sassmaker.com/newsletter-capture.js?v=precise-b0adaa67" />
     </div>
   );
 }
