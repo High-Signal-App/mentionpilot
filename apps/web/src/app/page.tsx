@@ -1,5 +1,6 @@
 import { MentionPilotMark } from "@/components/mentionpilot-mark";
 import { SaaSMakerFeedback } from "@/components/saasmaker-feedback";
+import { FooterStudioFocus } from "@/components/footer-studio-focus";
 import type { Metadata } from "next";
 import Link from "next/link";
 import styles from "./page.module.css";
@@ -346,6 +347,7 @@ export default function Home() {
             integrated=""
           ></saas-maker-newsletter-capture>
         </fleet-footer-extension>
+        <FooterStudioFocus />
       </footer>
       <script src="https://sassmaker.com/project-strip.js?v=precise-b0adaa67" data-project="mentionpilot" data-theme="dark" data-host-only="true" defer />
       <script src="https://sassmaker.com/ai-chat-footer.js?v=precise-b0adaa67" data-project="mentionpilot" data-name="MentionPilot" data-theme="dark" data-surface="web" data-host-only="true" data-capture="false" data-feedback="false" defer />

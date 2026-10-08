@@ -67,3 +67,11 @@
   outline: 2px solid var(--support-focus);
   outline-offset: 4px;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .support :global([data-saasmaker-widget] .smw-overlay),
+  .support :global([data-saasmaker-widget] .smw-modal) {
+    animation: none;
+    transition: none;
+  }
+}
