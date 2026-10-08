@@ -91,5 +91,3 @@ bash scripts/build-badge.sh
 2. Audit report: missing canonical summaries, weak FAQ coverage, broken structured data
 3. Recurring scan + diff dashboard
 4. Bundle with existing badge widget — "AI-Optimized" trust signal
-
-## Active context
