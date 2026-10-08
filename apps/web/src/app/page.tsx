@@ -1,4 +1,5 @@
 import { MentionPilotMark } from "@/components/mentionpilot-mark";
+import { SaaSMakerFeedback } from "@/components/saasmaker-feedback";
 import type { Metadata } from "next";
 import Link from "next/link";
 import styles from "./page.module.css";
@@ -332,6 +333,7 @@ export default function Home() {
               App Health measures public page views and named actions using first-party anonymous browser IDs for up to 90 days. See the <a href="https://sassmaker.com/privacy">privacy policy</a>.
             </p>
           </div>
+          <SaaSMakerFeedback embedded />
           <saas-maker-newsletter-capture
             slot="capture"
             product-name="MentionPilot"
@@ -346,7 +348,7 @@ export default function Home() {
         </fleet-footer-extension>
       </footer>
       <script src="https://sassmaker.com/project-strip.js?v=precise-b0adaa67" data-project="mentionpilot" data-theme="dark" data-host-only="true" defer />
-      <script src="https://sassmaker.com/ai-chat-footer.js?v=precise-b0adaa67" data-project="mentionpilot" data-name="MentionPilot" data-theme="dark" data-surface="web" data-host-only="true" data-capture="false" defer />
+      <script src="https://sassmaker.com/ai-chat-footer.js?v=precise-b0adaa67" data-project="mentionpilot" data-name="MentionPilot" data-theme="dark" data-surface="web" data-host-only="true" data-capture="false" data-feedback="false" defer />
       <script type="module" src="https://sassmaker.com/newsletter-capture.js?v=precise-b0adaa67" />
     </div>
   );

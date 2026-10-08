@@ -14,6 +14,19 @@
   color: var(--foreground);
 }
 
+.embedded {
+  --support-focus: #f2eee5;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+}
+
+.embedded .section {
+  padding: 0;
+  border: 0;
+}
+
 .section {
   display: flex;
   flex-wrap: wrap;

@@ -9,11 +9,14 @@ import styles from "./saasmaker-feedback.module.css";
 const API_BASE = "https://api.sassmaker.com";
 const CATALOG_ID = "mentionpilot";
 
-export function SaaSMakerFeedback() {
+export function SaaSMakerFeedback({ embedded = false }: { embedded?: boolean } = {}) {
   const [projectKey, setProjectKey] = useState("");
-  const isWorkspace = usePathname().startsWith("/dashboard");
+  const pathname = usePathname();
+  const isWorkspace = pathname.startsWith("/dashboard");
+  const shouldShow = embedded || pathname !== "/";
 
   useEffect(() => {
+    if (!shouldShow) return;
     let active = true;
 
     fetch(`${API_BASE}/v1/capture-config/${CATALOG_ID}`)
@@ -31,12 +34,13 @@ export function SaaSMakerFeedback() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [shouldShow]);
 
-  if (!projectKey) return null;
+  if (!projectKey || !shouldShow) return null;
   return (
     <footer
-      className={`${styles.support} ${isWorkspace ? styles.workspace : ""}`}
+      slot={embedded ? "feedback" : undefined}
+      className={`${styles.support} ${isWorkspace ? styles.workspace : ""} ${embedded ? styles.embedded : ""}`}
       aria-labelledby="feedback-heading"
     >
       <div className={styles.section}>
