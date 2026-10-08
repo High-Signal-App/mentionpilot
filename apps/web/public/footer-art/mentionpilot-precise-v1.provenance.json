@@ -1,0 +1,23 @@
+{
+  "asset": "/footer-art/mentionpilot-precise-v1.webp",
+  "credit": "Original illustration for MentionPilot",
+  "alt": "An editorial research desk with two evidence trays, source sheets, and a central notebook marked with coral annotations.",
+  "dimensions": { "width": 2172, "height": 724 },
+  "original": {
+    "format": "PNG",
+    "sha256": "7ab68c0eff69b04bc9767f285c9ca360fe2c54e5f3e72c237a9982ab3b6ef0b4",
+    "dimensions": { "width": 2172, "height": 724 }
+  },
+  "derivative": {
+    "format": "WebP",
+    "sha256": "cae90c5c4c4c07d50923db0ac4f95f3b84a87a03e0b7a254ff681f9a49473da2",
+    "dimensions": { "width": 2172, "height": 724 },
+    "encoding": "cwebp -q 90 -m 6"
+  },
+  "creation": {
+    "method": "Built-in image generation",
+    "purposeBasis": "MentionPilot PRODUCT.md: evidence-first brand intelligence; inspectable AI answers, source context, competitor narrative, and actionable gaps.",
+    "promptSummary": "Original tactile editorial research-desk scene with two paper evidence trays, abstract answer/source sheets, a central annotated synthesis notebook, warm paper, charcoal and restrained coral. No people, logos, readable text, customer data, or product UI."
+  },
+  "publicUse": "Created as new public MentionPilot footer artwork for the selected C Precise composition. It does not reuse historical private art."
+}

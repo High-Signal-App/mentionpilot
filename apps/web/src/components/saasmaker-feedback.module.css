@@ -14,6 +14,19 @@
   color: var(--foreground);
 }
 
+.embedded {
+  --support-focus: #f2eee5;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+}
+
+.embedded .section {
+  padding: 0;
+  border: 0;
+}
+
 .section {
   display: flex;
   flex-wrap: wrap;
@@ -53,4 +66,12 @@
 .support :global([data-saasmaker-widget] .smw-trigger:focus-visible) {
   outline: 2px solid var(--support-focus);
   outline-offset: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .support :global([data-saasmaker-widget] .smw-overlay),
+  .support :global([data-saasmaker-widget] .smw-modal) {
+    animation: none;
+    transition: none;
+  }
 }

@@ -13,6 +13,25 @@ declare module "react" {
         source?: string;
         "privacy-url"?: string;
         theme?: string;
+        layout?: string;
+        integrated?: string;
+      };
+      "fleet-footer-extension": React.DetailedHTMLProps<
+        React.HTMLAttributes<HTMLElement>,
+        HTMLElement
+      > & {
+        "data-fleet-footer-project"?: string;
+        "product-name"?: string;
+        "signature-font"?: "newsreader" | "ui" | "inherit";
+        "font-base"?: string;
+        "art-src"?: string;
+        "art-alt"?: string;
+        "art-width"?: string;
+        "art-height"?: string;
+        "art-position"?: string;
+        "art-credit"?: string;
+        theme?: "dark" | "light";
+        surface?: "web" | "app";
       };
     }
   }
