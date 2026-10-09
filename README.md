@@ -1,3 +1,5 @@
+> **Moved.** This project now lives in [Site Health](https://github.com/sass-maker/site-health) as the Brand evidence section of AI Awareness (merged in sass-maker/site-health#520, from this repo at `4d7a23e`). This repository is kept for history and is no longer developed.
+
 # Mentionpilot
 
 ## Setup
